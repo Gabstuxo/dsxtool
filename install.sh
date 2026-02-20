@@ -1,105 +1,83 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-RC='\033[0m'
+NC='\033[0m' # No Color
 
-check_root() {
-    if [ "$EUID" -ne 0 ]; then
-        echo -e "${RED}Error: Please run as root${RC}"
-        exit 1
-    fi
-}
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-check_distro() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        case "$ID" in
-            ubuntu|debian|arch|fedora)
-                DISTRO="$ID"
-                ;;
-            *)
-                echo -e "${RED}Unsupported distro: $ID${RC}"
-                exit 1
-                ;;
-        esac
-    else
-        echo -e "${RED}Cannot determine distro${RC}"
-        exit 1
-    fi
-}
+source "$BASE_DIR/core/detect.sh"
 
-run_script() {
-    local script_path="$1"
-    
-    if [ ! -f "$script_path" ]; then
-        echo -e "${RED}Error: Script not found: $script_path${RC}"
-        read -p "Press Enter to continue..."
-        return 1
-    fi
-    
-    echo -e "${BLUE}Running: $script_path${RC}"
-    if ! bash "$script_path"; then
-        echo -e "${RED}Error: Script failed: $script_path${RC}"
-        read -p "Press Enter to continue..."
-        return 1
-    fi
-    
-    echo -e "${GREEN}Script completed successfully!${RC}"
+if [[ ! -f "$BASE_DIR/core/distros/$DISTRO.sh" ]]; then
+    echo -e "${RED}Unsupported distro:${NC} $DISTRO"
+    exit 1
+fi
+
+source "$BASE_DIR/core/distros/$DISTRO.sh"
+
+UI() {
+    echo -e "${CYAN}==============================${NC}"
+    echo -e "${BLUE}           DSXTOOL${NC}"
+    echo -e "${CYAN}==============================${NC}"
+    echo -e "Detected distro: ${GREEN}$DISTRO${NC}"
     echo ""
-    read -p "Press Enter to continue..."
+    echo -e "${YELLOW}1)${NC} Install TLP"
+    echo -e "${YELLOW}2)${NC} Install Alacritty"
+    echo -e "${YELLOW}3)${NC} Update System"
+    echo -e "${RED}4)${NC} Exit"
+    echo ""
+}
+install_tlp_module() {
+    echo -e "${BLUE}>> Installing TLP...${NC}"
+    source "$BASE_DIR/modules/tlp.sh"
+    install_tlp
+    echo -e "${GREEN}TLP installation finished.${NC}"
+}
+
+install_alacritty_module() {
+    echo -e "${BLUE}>> Installing Alacritty...${NC}"
+    source "$BASE_DIR/modules/alacritty.sh"
+    install_alacritty
+    echo -e "${GREEN}Alacritty installation finished.${NC}"
+}
+
+update_system_module() {
+    echo -e "${BLUE}>> Updating system...${NC}"
+    pkg_update
+    echo -e "${GREEN}System update completed.${NC}"
 }
 
 main() {
-    # Verificações iniciais
-    check_root
-    check_distro
-    
     while true; do
         clear
-        echo -e "${CYAN}================================${RC}"
-        echo -e "${MAGENTA}      DSXTool - $DISTRO Edition${RC}"
-        echo -e "${CYAN}================================${RC}"
-        echo -e "${YELLOW}Detected distro: ${GREEN}$DISTRO${RC}"
-        echo ""
-        echo -e "${BLUE}1)${RC} Install TLP (Battery Optimization)"
-        echo -e "${BLUE}2)${RC} Install Fastfetch"
-        echo -e "${BLUE}3)${RC} Remove Fastfetch"
-        echo -e "${BLUE}4)${RC} Gaming Setup"
-        echo -e "${BLUE}5)${RC} Install My Apps"
-        echo -e "${RED}6)${RC} Exit"
-        echo ""
-        read -p "$(echo -e ${YELLOW}Enter your choice:${RC} )" choice
-        
-        case $choice in
+        UI
+        read -rp "$(echo -e "${CYAN}Select option:${NC} ")" choice
+
+        case "$choice" in
             1)
-                run_script "core/$DISTRO/tlp.sh"
+                install_tlp_module
                 ;;
             2)
-                run_script "core/$DISTRO/fastfetch.sh"
+                install_alacritty_module
                 ;;
             3)
-                run_script "core/$DISTRO/fastfetch_remove.sh"
+                update_system_module
                 ;;
             4)
-                run_script "core/$DISTRO/gaming-setup.sh"
-                ;;
-            5)
-                run_script "core/$DISTRO/install_my_apps.sh"
-                ;;
-            6)
-                echo -e "${GREEN}Exiting...${RC}"
+                echo -e "${GREEN}Exiting...${NC}"
                 exit 0
                 ;;
             *)
-                echo -e "${RED}Invalid choice. Please try again.${RC}"
-                sleep 2
+                echo -e "${RED}Invalid option.${NC}"
+                sleep 1
                 ;;
         esac
+
+        read -rp "$(echo -e "${YELLOW}Press Enter to continue...${NC}")"
     done
 }
 
