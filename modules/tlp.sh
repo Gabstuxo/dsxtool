@@ -1,17 +1,24 @@
-# Source core distro detection and functions
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$BASE_DIR/../core/detect.sh"
-source "$BASE_DIR/../core/distros/$DISTRO.sh"
+#!/usr/bin/env bash
+set -euo pipefail
+
+source "${BASE_DIR}/core/common.sh"
+source "${BASE_DIR}/core/detect.sh"
+source "${BASE_DIR}/core/distros/$DISTRO.sh"
 
 install_tlp() {
     if pkg_exists tlp; then
-        log_info "TLP already installed"
-        return
+        log_info "TLP is already installed."
+        return 0
     fi
 
-    pkg_install tlp
-    sudo systemctl enable tlp
-    sudo systemctl start tlp
+    log_info "Installing TLP..."
+    pkg_install tlp || die "Failed to install TLP."
+
+    log_info "Enabling and starting TLP service..."
+    sudo systemctl enable tlp || log_warn "Failed to enable TLP service."
+    sudo systemctl start tlp || log_warn "Failed to start TLP service."
+    
+    log_info "TLP installed and started successfully."
 }
 
 

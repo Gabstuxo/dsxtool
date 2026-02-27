@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-log_info(){ echo -e "${GREEN}[INFO]${RESET} $*"; }
-log_warn(){ echo -e "${YELLOW}[WARN]${RESET} $*"; }
-log_error(){ echo -e "${RED}[ERROR]${RESET} $*"; }
+source "${BASE_DIR}/core/common.sh"
+source "${BASE_DIR}/core/detect.sh"
+source "${BASE_DIR}/core/distros/$DISTRO.sh"
 
-
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$BASE_DIR/../core/detect.sh"
-source "$BASE_DIR/../core/distros/$DISTRO.sh"
-
-UI(){
+UI() {
     clear
     echo -e "${CYAN}==============================${RESET}"
-    echo -e "${BLUE}=======  Change Desktop ========${RESET}"
+    echo -e "${BLUE}    Change Desktop Environment${RESET}"
     echo -e "${CYAN}==============================${RESET}"
     echo ""
     echo -e "${YELLOW}1)${RESET} Install KDE Plasma"
@@ -23,47 +19,49 @@ UI(){
     echo ""
 }
 
-install_kde(){
+install_kde() {
     local pkg=$(get_desktop_packages "kde")
     log_info "Installing KDE Plasma (packages: $pkg)..."
     read -rp "$(echo -e "${YELLOW}Proceed? (y/n):${RESET} ")" confirm
-    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Cancelled."; return 0; }
-    pkg_install $pkg && log_info "KDE Plasma installed." || log_error "Installation failed."
+    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Installation cancelled."; return 0; }
+    pkg_install $pkg && log_info "KDE Plasma installed successfully." || log_error "Installation failed."
 }
 
-install_xfce(){
+install_xfce() {
     local pkg=$(get_desktop_packages "xfce")
     log_info "Installing XFCE (packages: $pkg)..."
     read -rp "$(echo -e "${YELLOW}Proceed? (y/n):${RESET} ")" confirm
-    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Cancelled."; return 0; }
-    pkg_install $pkg && log_info "XFCE installed." || log_error "Installation failed."
+    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Installation cancelled."; return 0; }
+    pkg_install $pkg && log_info "XFCE installed successfully." || log_error "Installation failed."
 }
 
-install_hyprland(){
+install_hyprland() {
     local pkg=$(get_desktop_packages "hyprland")
     log_info "Installing Hyprland (packages: $pkg)..."
     read -rp "$(echo -e "${YELLOW}Proceed? (y/n):${RESET} ")" confirm
-    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Cancelled."; return 0; }
-    pkg_install $pkg && log_info "Hyprland installed." || log_error "Installation failed."
+    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Installation cancelled."; return 0; }
+    pkg_install $pkg && log_info "Hyprland installed successfully." || log_error "Installation failed."
 }
 
-install_hyprland_csouzape(){
+install_hyprland_csouzape() {
     local pkg=$(get_desktop_packages "hyprland")
     log_info "Installing Hyprland (csouzape edition) (packages: $pkg)..."
     read -rp "$(echo -e "${YELLOW}Proceed? (y/n):${RESET} ")" confirm
-    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Cancelled."; return 0; }
-    
+    [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Installation cancelled."; return 0; }
+
     if pkg_install $pkg; then
-        log_info "Hyprland installed. Fetching csouzape config..."
+        log_info "Hyprland installed. Fetching csouzape configuration..."
         if command -v git &>/dev/null; then
             mkdir -p "$HOME/.config/hypr"
             if git clone https://github.com/csouzape/hyprland-config "$HOME/.config/hypr.tmp" 2>/dev/null; then
                 cp -r "$HOME/.config/hypr.tmp"/* "$HOME/.config/hypr/" 2>/dev/null
                 rm -rf "$HOME/.config/hypr.tmp"
-                log_info "csouzape's Hyprland config applied."
+                log_info "csouzape's Hyprland configuration applied."
             else
-                log_warn "Could not fetch config. Using defaults."
+                log_warn "Could not fetch configuration. Using defaults."
             fi
+        else
+            log_warn "Git not found. Skipping configuration download."
         fi
     else
         log_error "Installation failed."

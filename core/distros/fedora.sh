@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$BASE_DIR/../common.sh"
 
 pkg_update() {
-    read -rp "Deseja atualizar o sistema? (s/n): " confirm
-    if [[ "$confirm" =~ ^[Ss]$ ]]; then
+    read -rp "Do you want to update the system? (y/n): " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        log_info "Updating system..."
         sudo dnf upgrade -y
+        log_info "System updated successfully."
     else
-        echo "Atualização cancelada"
+        log_warn "Update cancelled."
     fi
 }
 

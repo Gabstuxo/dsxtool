@@ -1,14 +1,7 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-RED='\e[31m'
-GREEN='\e[32m'
-YELLOW='\e[33m'
-BLUE='\e[34m'
-RESET='\e[0m'
-
-log_info(){ echo -e "${GREEN}[INFO]${RESET} $*"; }
-log_warn(){ echo -e "${YELLOW}[WARN]${RESET} $*"; }
-log_error(){ echo -e "${RED}[ERROR]${RESET} $*"; }
+source "${BASE_DIR}/core/common.sh"
 
 WALLDIR="$HOME/Imagens/wallpapers"
 REPO_URL="https://github.com/csouzape/wallpapers"

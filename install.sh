@@ -1,110 +1,94 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-RESET='\033[0m'
-NC='\033[0m' # No Color
-
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export BASE_DIR
 
+# Source common functions
+source "$BASE_DIR/core/common.sh"
 source "$BASE_DIR/core/detect.sh"
 
 if [[ ! -f "$BASE_DIR/core/distros/$DISTRO.sh" ]]; then
-    echo -e "${RED}Unsupported distro:${NC} $DISTRO"
-    exit 1
+    die "Unsupported distro: $DISTRO"
 fi
 
 source "$BASE_DIR/core/distros/$DISTRO.sh"
 
 UI() {
-    echo -e "${CYAN}==============================${NC}"
-    echo -e "${BLUE}           DSXTOOL${NC}"
-    echo -e "${CYAN}==============================${NC}"
-    echo -e "Detected distro: ${GREEN}$DISTRO${NC}"
+    clear
+    echo -e "${CYAN}==============================${RESET}"
+    echo -e "${BLUE}           DSXTOOL${RESET}"
+    echo -e "${CYAN}==============================${RESET}"
+    echo -e "Detected distro: ${GREEN}$DISTRO${RESET}"
     echo ""
-    echo -e "${YELLOW}1)${NC} Install TLP"
-    echo -e "${YELLOW}2)${NC} Install Alacritty"
-    echo -e "${YELLOW}3)${NC} Update System"  
-    echo -e "${YELLOW}4)${NC} Setup wallpapers"
-    echo -e "${YELLOW}5)${NC} Change desktop environment"
-    echo -e "${RED}6)${NC} Exit"
+    echo -e "${YELLOW}1)${RESET} Install TLP"
+    echo -e "${YELLOW}2)${RESET} Install Alacritty"
+    echo -e "${YELLOW}3)${RESET} Update System"
+    echo -e "${YELLOW}4)${RESET} Setup Wallpapers"
+    echo -e "${YELLOW}5)${RESET} Change Desktop Environment"
+    echo -e "${RED}6)${RESET} Exit"
     echo ""
 }
 install_tlp_module() {
-    echo -e "${BLUE}>> Installing TLP...${NC}"
+    log_info "Installing TLP..."
     source "$BASE_DIR/modules/tlp.sh"
     replace_manager_with_tlp
     if ! pkg_exists tlp; then
         install_tlp
     fi
-    echo -e "${GREEN}TLP installation finished.${NC}"
+    log_info "TLP installation finished."
 }
 
 install_alacritty_module() {
-    echo -e "${BLUE}>> Installing Alacritty...${NC}"
+    log_info "Installing Alacritty..."
     source "$BASE_DIR/modules/alacritty.sh"
     install_alacritty
-    echo -e "${GREEN}Alacritty installation finished.${NC}"
+    log_info "Alacritty installation finished."
 }
 
 change_desktop_module() {
-    echo -e "${BLUE}>> Changing desktop environment...${NC}"
+    log_info "Changing desktop environment..."
     source "$BASE_DIR/modules/change_desktop.sh"
     prompt_change_desktop
-    echo -e "${GREEN}Desktop environment process finished.${NC}"
+    log_info "Desktop environment setup finished."
 }
 
 update_system_module() {
-    echo -e "${BLUE}>> Updating system...${NC}"
+    log_info "Updating system..."
     pkg_update
-    echo -e "${GREEN}System update completed.${NC}"
+    log_info "System update completed."
 }
 
 install_wallpapers_module() {
-    echo -e "${BLUE}>> Setting up wallpapers...${NC}"
+    log_info "Setting up wallpapers..."
     source "$BASE_DIR/modules/wallpapers.sh"
     prompt_wallpapers
-    echo -e "${GREEN}Wallpaper setup process completed.${NC}"
+    log_info "Wallpaper setup completed."
 }   
 
 
 main() {
     while true; do
-        clear
         UI
-        read -rp "$(echo -e "${CYAN}Select option:${NC} ")" choice
+        read -rp "$(echo -e "${CYAN}Select option:${RESET} ")" choice
 
         case "$choice" in
-            1)
-                install_tlp_module
-                ;;
-            2)
-                install_alacritty_module
-                ;;
-            3)
-                update_system_module
-                ;;
-            4)
-                install_wallpapers_module
-                ;;
-            5)
-                change_desktop_module
-                ;;
+            1) install_tlp_module ;;
+            2) install_alacritty_module ;;
+            3) update_system_module ;;
+            4) install_wallpapers_module ;;
+            5) change_desktop_module ;;
             6)
-                echo -e "${GREEN}Exiting...${NC}"
+                log_info "Exiting..."
                 exit 0
                 ;;
             *)
-                echo -e "${RED}Invalid option.${NC}"
+                log_error "Invalid option."
                 sleep 1
                 ;;
         esac
 
-        read -rp "$(echo -e "${YELLOW}Press Enter to continue...${NC}")"
+        prompt_continue
     done
 }
 
