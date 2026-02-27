@@ -20,3 +20,13 @@ pkg_remove() {
 pkg_exists() {
     pacman -Qi "$1" &>/dev/null
 }
+
+# Desktop environment package mappings
+get_desktop_packages() {
+    case "$1" in
+        kde) echo "plasmabase plasma-desktop" ;;
+        xfce) echo "xfce4" ;;
+        hyprland) echo "hyprland hyprpaper" ;;
+        *) echo "$1" ;;
+    esac
+}

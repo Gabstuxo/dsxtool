@@ -1,10 +1,73 @@
+# Source core distro detection and functions
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$BASE_DIR/../core/detect.sh"
+source "$BASE_DIR/../core/distros/$DISTRO.sh"
+
 install_tlp() {
     if pkg_exists tlp; then
-        echo "TLP already installed"
+        log_info "TLP already installed"
         return
     fi
 
     pkg_install tlp
     sudo systemctl enable tlp
     sudo systemctl start tlp
+}
+
+
+detect_manager(){
+   
+   for bin in tlp tuned power-profiles-daemon system76-power; do
+        if command -v "$bin" &>/dev/null; then
+            echo "$bin"
+            return 0
+        fi
+    done
+    return 1
+}
+
+
+replace_manager_with_tlp(){
+    local manager
+    manager=$(detect_manager)
+
+    if [[ -z "$manager" ]]; then
+        # nothing found; maybe tlp isn't installed either
+        log_info "No power manager binary detected on PATH."
+        if pkg_exists tlp; then
+            log_info "TLP is already installed."
+        fi
+        # always give user the choice to install
+        read -rp "Do you want to install TLP now? (y/n): " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            install_tlp
+        else
+            log_warn "Skipping TLP installation."
+        fi
+        return
+    fi
+
+    log_info "Currently using power manager: $manager"
+    if [[ "$manager" == "tlp" ]]; then
+        log_info "TLP is already configured and running."
+        return
+    fi
+
+    read -rp "Do you want to remove '$manager' and install TLP instead? (y/n): " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        log_info "Removing $manager..."
+        pkg_remove "$manager"
+        log_info "Installing TLP..."
+        install_tlp
+        log_info "Configuration complete."
+    else
+        log_warn "Operation cancelled by user; manager '$manager' was not changed."
+    fi
+}
+
+check_manager(){
+   if detect_manager >/dev/null; then
+       
+       return 1
+   fi
 }

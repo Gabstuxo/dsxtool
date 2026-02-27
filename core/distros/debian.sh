@@ -20,3 +20,13 @@ pkg_remove() {
 pkg_exists() {
     dpkg -s "$1" &>/dev/null
 }
+
+# Desktop environment package mappings
+get_desktop_packages() {
+    case "$1" in
+        kde) echo "kde-plasma-desktop" ;;
+        xfce) echo "xfce4" ;;
+        hyprland) echo "hyprland" ;;
+        *) echo "$1" ;;
+    esac
+}
