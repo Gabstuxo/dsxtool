@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source "${BASE_DIR}/core/common.sh"
-source "${BASE_DIR}/core/detect.sh"
-source "${BASE_DIR}/core/distros/$DISTRO.sh"
 
 UI() {
     clear
@@ -44,29 +41,36 @@ install_hyprland() {
 }
 
 install_hyprland_csouzape() {
-    local pkg=$(get_desktop_packages "hyprland")
-    log_info "Installing Hyprland (csouzape edition) (packages: $pkg)..."
+    local repo_url="https://github.com/csouzape/hyprdots"
+
+    log_info "Installing Hyprland (csouzape edition)..."
     read -rp "$(echo -e "${YELLOW}Proceed? (y/n):${RESET} ")" confirm
     [[ "$confirm" =~ ^[Yy]$ ]] || { log_warn "Installation cancelled."; return 0; }
 
-    if pkg_install $pkg; then
-        log_info "Hyprland installed. Fetching csouzape configuration..."
-        if command -v git &>/dev/null; then
-            mkdir -p "$HOME/.config/hypr"
-            if git clone https://github.com/csouzape/hyprland-config "$HOME/.config/hypr.tmp" 2>/dev/null; then
-                cp -r "$HOME/.config/hypr.tmp"/* "$HOME/.config/hypr/" 2>/dev/null
-                rm -rf "$HOME/.config/hypr.tmp"
-                log_info "csouzape's Hyprland configuration applied."
-            else
-                log_warn "Could not fetch configuration. Using defaults."
-            fi
-        else
-            log_warn "Git not found. Skipping configuration download."
-        fi
-    else
-        log_error "Installation failed."
+    if ! command -v git &>/dev/null; then
+        log_error "Git is not installed."
+        return 1
     fi
+
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+
+    log_info "Cloning $repo_url..."
+    git clone "$repo_url" "$tmp_dir" || {
+        log_error "Failed to clone repository."
+        rm -rf "$tmp_dir"
+        return 1
+    }
+
+    cd "$tmp_dir" || { log_error "Failed to enter repository."; return 1; }
+    chmod +x hyprdots.sh
+    sudo ./hyprdots.sh
+
+    cd - > /dev/null
+    rm -rf "$tmp_dir"
+    log_info "csouzape's Hyprland config installed successfully."
 }
+
 
 prompt_change_desktop(){
     UI
@@ -77,9 +81,7 @@ prompt_change_desktop(){
         2) install_xfce ;;
         3) install_hyprland ;;
         4) install_hyprland_csouzape ;;
-        5) log_info "Exiting." ;;
+        5) log_info "Exiting."; return 1 ;;
         *) log_error "Invalid option." ;;
     esac
 }
-
-    
