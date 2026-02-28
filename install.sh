@@ -4,7 +4,6 @@ set -euo pipefail
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export BASE_DIR
 
-# Source common functions
 source "$BASE_DIR/core/common.sh"
 source "$BASE_DIR/core/detect.sh"
 
