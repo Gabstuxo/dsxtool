@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source "${BASE_DIR}/core/common.sh"
-source "${BASE_DIR}/core/detect.sh"
-source "${BASE_DIR}/core/distros/$DISTRO.sh"
 
 install_tlp() {
     if pkg_exists tlp; then

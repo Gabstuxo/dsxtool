@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DISTRO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$BASE_DIR/core/common.sh"
 
 pkg_update() {
     read -rp "Do you want to update the system? (y/n): " confirm

@@ -25,17 +25,16 @@ UI() {
     echo -e "${YELLOW}3)${RESET} Update System"
     echo -e "${YELLOW}4)${RESET} Setup Wallpapers"
     echo -e "${YELLOW}5)${RESET} Change Desktop Environment"
+    [[ "$DISTRO" == "arch" ]] && echo -e "${YELLOW}7)${RESET} Setup yay (AUR helper)"
     echo -e "${RED}6)${RESET} Exit"
     echo ""
 }
+
 install_tlp_module() {
-    log_info "Installing TLP..."
+    log_info "Setting up TLP power management..."
     source "$BASE_DIR/modules/tlp.sh"
     replace_manager_with_tlp
-    if ! pkg_exists tlp; then
-        install_tlp
-    fi
-    log_info "TLP installation finished."
+    log_info "TLP setup finished."
 }
 
 install_alacritty_module() {
@@ -63,8 +62,14 @@ install_wallpapers_module() {
     source "$BASE_DIR/modules/wallpapers.sh"
     prompt_wallpapers
     log_info "Wallpaper setup completed."
-}   
+}
 
+install_yay_module() {
+    log_info "Setting up yay AUR helper..."
+    source "$BASE_DIR/modules/setupyay.sh"
+    setup_yay
+    log_info "yay setup finished."
+}
 
 main() {
     while true; do
@@ -77,6 +82,14 @@ main() {
             3) update_system_module ;;
             4) install_wallpapers_module ;;
             5) change_desktop_module ;;
+            7)
+                if [[ "$DISTRO" == "arch" ]]; then
+                    install_yay_module
+                else
+                    log_error "Invalid option."
+                    sleep 1
+                fi
+                ;;
             6)
                 log_info "Exiting..."
                 exit 0
