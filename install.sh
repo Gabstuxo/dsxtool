@@ -75,6 +75,14 @@ install_yay_module() {
     log_info "yay setup finished."
 }
 
+install_fonts_module() {
+    log_info "Setting up fonts..."
+    source "$BASE_DIR/modules/fonts.sh"
+    log_info "Fonts setup finished."
+
+}
+
+
 build_menu() {
     local options=(
         "1) Install TLP"
@@ -82,7 +90,8 @@ build_menu() {
         "3) Update System"
         "4) Setup Wallpapers"
         "5) Change Desktop Environment"
-        "6) Exit"
+        "6) Fonts Downloader"
+        "7) Exit"
     )
     [[ "$DISTRO" == "arch" ]] && options+=("7) Setup yay (AUR helper)")
     printf '%s\n' "${options[@]}"
@@ -109,8 +118,9 @@ main() {
             "3)"*) update_system_module ;;
             "4)"*) install_wallpapers_module ;;
             "5)"*) change_desktop_module ;;
-            "6)"*) [[ "$DISTRO" == "arch" ]] && install_yay_module ;;
-            "7)"*)
+            "6)"*) install_fonts_module ;;
+            "7)"*) [[ "$DISTRO" == "arch" ]] && install_yay_module ;;
+            "8)"*)
                 log_info "Exiting..."
                 exit 0
                 ;;
