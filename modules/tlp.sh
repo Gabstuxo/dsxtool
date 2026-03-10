@@ -36,12 +36,12 @@ replace_manager_with_tlp(){
     manager=$(detect_manager)
 
     if [[ -z "$manager" ]]; then
-        # nothing found; maybe tlp isn't installed either
+    
         log_info "No power manager binary detected on PATH."
         if pkg_exists tlp; then
             log_info "TLP is already installed."
         fi
-        # always give user the choice to install
+
         read -rp "Do you want to install TLP now? (y/n): " confirm
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             install_tlp
