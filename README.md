@@ -95,6 +95,37 @@ On launch, `install.sh` sources `core/common.sh` and `core/detect.sh`, which set
 
 Each menu option sources its module on demand and calls a single entry-point function — keeping the codebase modular and easy to extend.
 
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+If you want to contribute to **dsxtool**, please read the contribution guidelines first:
+
+ **[Contribution Guide](contributing.md)**
+
+### Reporting Issues
+
+Before opening a new issue, check if it already exists.
+
+Use the provided templates:
+
+* **Bug reports:** `.github/bug_report.md`
+* **Feature requests:** `.github/feature_request.md`
+
+These templates help maintain consistent and actionable reports.
+
+### Development Notes
+
+* Modules should remain **self-contained Bash scripts** inside `modules/`
+* New features must expose **a single entry-point function**
+* All package operations must use the **distro abstraction layer** (`pkg_install`, `pkg_remove`, `pkg_exists`)
+* Avoid hardcoding distro-specific logic inside modules
+
+
+
 ---
 
 ## License
