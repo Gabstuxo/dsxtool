@@ -5,8 +5,8 @@ REPO="https://github.com/csouzape/dsxtool.git"
 INSTALL_DIR="$HOME/.local/share/dsxtool"
 
 if ! command -v git >/dev/null 2>&1; then
-    echo "git is required but not installed"
-    exit 1
+    log_info "git not found. Installing..."
+    pkg_install git || die "Failed to install git."
 fi
 
 if [[ -d "$INSTALL_DIR/.git" ]]; then
