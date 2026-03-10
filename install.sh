@@ -43,6 +43,7 @@ verify_fzf_tool() {
         esac
     done
 }
+verify_fzf_tool
 
 install_tlp_module() {
     log_info "Setting up TLP power management..."
