@@ -7,6 +7,9 @@ export BASE_DIR
 source "$BASE_DIR/core/common.sh"
 source "$BASE_DIR/core/detect.sh"
 
+detect_distro
+
+
 if [[ ! -f "$BASE_DIR/core/distros/$DISTRO.sh" ]]; then
     die "Unsupported distro: $DISTRO"
 fi
@@ -25,8 +28,6 @@ verify_fzf_tool() {
 }
 
 verify_fzf_tool
-
-# --- Modules ---
 
 install_tlp_module() {
     log_info "Setting up TLP power management..."
