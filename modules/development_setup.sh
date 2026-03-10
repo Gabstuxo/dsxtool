@@ -4,7 +4,7 @@ set -euo pipefail
 install_lang() {
     case "$1" in
         "Python")
-            log_info "Installing Python environment..."
+            log_info "Installing Python..."
             case "$DISTRO" in
                 arch)   pkg_install python python-pip python-virtualenv ;;
                 debian) pkg_install python3 python3-pip python3-venv ;;
@@ -41,8 +41,34 @@ install_lang() {
             pkg_install nodejs npm
             log_info "Node.js installed successfully."
             ;;
+        "Java (OpenJDK 17)")
+            log_info "Installing OpenJDK 17 + Maven + Gradle..."
+            case "$DISTRO" in
+                arch)   pkg_install jdk17-openjdk maven gradle ;;
+                debian) pkg_install openjdk-17-jdk maven gradle ;;
+                fedora) pkg_install java-17-openjdk maven gradle ;;
+            esac
+            log_info "Java installed successfully."
+            ;;
+        "Yarn")
+            log_info "Installing Yarn..."
+            case "$DISTRO" in
+                arch)   pkg_install yarn ;;
+                debian) pkg_install yarn ;;
+                fedora) pkg_install yarnpkg ;;
+            esac
+            log_info "Yarn installed successfully."
+            ;;
+        "PNPM")
+            log_info "Installing PNPM..."
+            curl -fsSL https://get.pnpm.io/install.sh | sh - \
+                && log_info "PNPM installed successfully." \
+                || die "Failed to install PNPM."
+            ;;
     esac
 }
+
+
 
 install_ide() {
     case "$1" in
@@ -52,13 +78,15 @@ install_ide() {
                 local method
                 method=$(printf "yay\nflatpak" \
                     | fzf --prompt="VS Code install method > " \
-                          --height=5 \
-                          --layout=reverse \
-                          --border=rounded \
-                          --no-info \
+                          --height=5 --layout=reverse --border=rounded --no-info \
                     || true)
                 case "$method" in
-                    yay)     yay -S --noconfirm visual-studio-code-bin ;;
+                    yay)
+                        if ! command -v yay &>/dev/null; then
+                            die "yay is not installed. Please run 'Setup yay' first."
+                        fi
+                        yay -S --noconfirm visual-studio-code-bin
+                        ;;
                     flatpak) flatpak install -y flathub com.visualstudio.code ;;
                     *)       log_warn "No method selected."; return 0 ;;
                 esac
@@ -91,16 +119,187 @@ install_ide() {
                 && log_info "Kate installed successfully." \
                 || die "Failed to install Kate."
             ;;
+        "Cursor")
+            log_info "Installing Cursor..."
+            if ! command -v yay &>/dev/null; then
+                die "yay is not installed. Please run 'Setup yay' first."
+            fi
+            yay -S --noconfirm cursor-bin \
+                && log_info "Cursor installed successfully." \
+                || die "Failed to install Cursor."
+            ;;
     esac
 }
 
+
+install_devtool() {
+    case "$1" in
+        "Postman")
+            log_info "Installing Postman via Flatpak..."
+            flatpak install -y flathub com.getpostman.Postman \
+                && log_info "Postman installed successfully." \
+                || die "Failed to install Postman."
+            ;;
+        "DBeaver")
+            log_info "Installing DBeaver via Flatpak..."
+            flatpak install -y flathub io.dbeaver.DBeaverCommunity \
+                && log_info "DBeaver installed successfully." \
+                || die "Failed to install DBeaver."
+            ;;
+        "PostgreSQL")
+            log_info "Installing PostgreSQL..."
+            case "$DISTRO" in
+                arch)   pkg_install postgresql ;;
+                debian) pkg_install postgresql postgresql-contrib ;;
+                fedora) pkg_install postgresql-server postgresql-contrib ;;
+            esac
+            sudo systemctl enable --now postgresql \
+                || log_warn "Failed to enable PostgreSQL service."
+            log_info "PostgreSQL installed successfully."
+            ;;
+        "Redis")
+            log_info "Installing Redis..."
+            case "$DISTRO" in
+                arch)   pkg_install redis ;;
+                debian) pkg_install redis-server ;;
+                fedora) pkg_install redis ;;
+            esac
+            sudo systemctl enable --now redis \
+                || log_warn "Failed to enable Redis service."
+            log_info "Redis installed successfully."
+            ;;
+        "Build Tools")
+            log_info "Installing build tools..."
+            case "$DISTRO" in
+                arch)   pkg_install base-devel ;;
+                debian) pkg_install build-essential ca-certificates gnupg lsb-release software-properties-common ;;
+                fedora) pkg_install gcc gcc-c++ make ;;
+            esac
+            log_info "Build tools installed successfully."
+            ;;
+        "Terraform")
+            log_info "Installing Terraform..."
+            case "$DISTRO" in
+                arch)
+                    pkg_install terraform \
+                        || die "Failed to install Terraform."
+                    ;;
+                debian)
+                    wget -O - https://apt.releases.hashicorp.com/gpg \
+                        | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+                    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+                        https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+                        | sudo tee /etc/apt/sources.list.d/hashicorp.list
+                    sudo apt update -y
+                    pkg_install terraform \
+                        || die "Failed to install Terraform."
+                    ;;
+                fedora)
+                    sudo dnf config-manager --add-repo \
+                        https://rpm.releases.hashicorp.com/fedora/hashicorp.repo
+                    pkg_install terraform \
+                        || die "Failed to install Terraform."
+                    ;;
+            esac
+            log_info "Terraform installed successfully."
+            ;;
+        "Minikube")
+            log_info "Installing Minikube..."
+            case "$DISTRO" in
+                arch)
+                    pkg_install minikube \
+                        || die "Failed to install Minikube."
+                    ;;
+                debian)
+                    curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb \
+                        -o /tmp/minikube.deb
+                    sudo dpkg -i /tmp/minikube.deb \
+                        || die "Failed to install Minikube."
+                    rm /tmp/minikube.deb
+                    ;;
+                fedora)
+                    curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm \
+                        -o /tmp/minikube.rpm
+                    sudo rpm -Uvh /tmp/minikube.rpm \
+                        || die "Failed to install Minikube."
+                    rm /tmp/minikube.rpm
+                    ;;
+            esac
+            log_info "Minikube installed successfully."
+            ;;
+        "Podman")
+            log_info "Installing Podman engine..."
+            pkg_install podman \
+                || die "Failed to install Podman."
+            log_info "Installing Podman Desktop via Flatpak..."
+            flatpak install -y flathub io.podman_desktop.PodmanDesktop \
+                && log_info "Podman installed successfully." \
+                || die "Failed to install Podman Desktop."
+            ;;
+        "Docker")
+            log_info "Installing Docker..."
+            case "$DISTRO" in
+                arch)
+                    pkg_install docker docker-compose
+                    sudo systemctl enable --now docker
+                    sudo usermod -aG docker "${SUDO_USER:-$USER}"
+                    ;;
+                debian)
+                    curl -fsSL https://get.docker.com | sudo sh \
+                        || die "Failed to install Docker."
+                    sudo usermod -aG docker "${SUDO_USER:-$USER}"
+                    ;;
+                fedora)
+                    sudo dnf config-manager --add-repo \
+                        https://download.docker.com/linux/fedora/docker-ce.repo
+                    pkg_install docker-ce docker-ce-cli containerd.io \
+                        docker-buildx-plugin docker-compose-plugin
+                    sudo systemctl enable --now docker
+                    sudo usermod -aG docker "${SUDO_USER:-$USER}"
+                    ;;
+            esac
+            log_info "Docker installed. Re-login to use Docker without sudo."
+            ;;
+        "Kubectl")
+            log_info "Installing kubectl..."
+            case "$DISTRO" in
+                arch)
+                    pkg_install kubectl \
+                        || die "Failed to install kubectl."
+                    ;;
+                debian)
+                    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key \
+                        | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+                    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] \
+                        https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" \
+                        | sudo tee /etc/apt/sources.list.d/kubernetes.list
+                    sudo apt update -y
+                    pkg_install kubectl \
+                        || die "Failed to install kubectl."
+                    ;;
+                fedora)
+                    pkg_install kubectl \
+                        || die "Failed to install kubectl."
+                    ;;
+            esac
+            log_info "kubectl installed successfully."
+            ;;
+    esac
+}
+
+
+
+
+
 menu_languages() {
     local selections
-    selections=$(printf '%s\n' "Python" "C++" "Rust" "Go" "Node.js" "Back" \
+    selections=$(printf '%s\n' \
+        "Python" "C++" "Rust" "Go" "Node.js" \
+        "Java (OpenJDK 17)" "Yarn" "PNPM" \
         | fzf -m \
               --prompt="Languages > " \
-              --header="[TAB] Select | [ENTER] Confirm" \
-              --height=12 \
+              --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
+              --height=15 \
               --layout=reverse \
               --border=rounded \
               --pointer="▶" \
@@ -109,20 +308,20 @@ menu_languages() {
         || true)
 
     [[ -z "$selections" ]] && { log_warn "No language selected."; return 0; }
-
     while read -r lang; do
-        [[ "$lang" == "Back" || -z "$lang" ]] && continue
+        [[ -z "$lang" ]] && continue
         install_lang "$lang"
     done <<< "$selections"
 }
 
 menu_ides() {
     local selections
-    selections=$(printf '%s\n' "VS Code" "Zed" "NVIM (LazyVim)" "Kate" "Back" \
+    selections=$(printf '%s\n' \
+        "VS Code" "Zed" "NVIM (LazyVim)" "Kate" "Cursor" \
         | fzf -m \
               --prompt="IDEs > " \
-              --header="[TAB] Select | [ENTER] Confirm" \
-              --height=10 \
+              --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
+              --height=12 \
               --layout=reverse \
               --border=rounded \
               --pointer="▶" \
@@ -131,20 +330,54 @@ menu_ides() {
         || true)
 
     [[ -z "$selections" ]] && { log_warn "No IDE selected."; return 0; }
-
     while read -r ide; do
-        [[ "$ide" == "Back" || -z "$ide" ]] && continue
+        [[ -z "$ide" ]] && continue
         install_ide "$ide"
     done <<< "$selections"
 }
+menu_devtools() {
+    local selections
+    selections=$(printf '%s\n' \
+        "Postman" \
+        "DBeaver" \
+        "PostgreSQL" \
+        "Redis" \
+        "Build Tools" \
+        "Docker" \
+        "Podman" \
+        "Kubectl" \
+        "Minikube" \
+        "Terraform" \
+        | fzf -m \
+              --prompt="Dev Tools > " \
+              --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
+              --height=16 \
+              --layout=reverse \
+              --border=rounded \
+              --pointer="▶" \
+              --color='header:#e5c07b,prompt:#61afef,pointer:#e06c75,hl:#98c379' \
+              --no-info \
+        || true)
+
+    [[ -z "$selections" ]] && { log_warn "No tool selected."; return 0; }
+    while read -r tool; do
+        [[ -z "$tool" ]] && continue
+        install_devtool "$tool"
+    done <<< "$selections"
+}
+
 
 setup_development() {
     while true; do
         local choice
-        choice=$(printf '%s\n' "Languages" "IDEs" "Exit" \
+        choice=$(printf '%s\n' \
+            "Languages & Runtimes" \
+            "IDEs & Editors" \
+            "Dev Tools" \
+            "Exit" \
             | fzf --prompt="Dev Setup > " \
                   --header="DEVELOPMENT SETUP" \
-                  --height=8 \
+                  --height=9 \
                   --layout=reverse \
                   --border=rounded \
                   --pointer="▶" \
@@ -153,9 +386,10 @@ setup_development() {
             || true)
 
         case "$choice" in
-            "Languages") menu_languages ;;
-            "IDEs")      menu_ides ;;
-            "Exit"|"")   log_info "Exiting."; return 0 ;;
+            "Languages & Runtimes") menu_languages ;;
+            "IDEs & Editors")       menu_ides ;;
+            "Dev Tools")            menu_devtools ;;
+            "Exit"|"")              log_info "Exiting."; return 0 ;;
         esac
     done
 }
