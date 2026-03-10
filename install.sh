@@ -17,17 +17,32 @@ fi
 source "$BASE_DIR/core/distros/$DISTRO.sh"
 
 verify_fzf_tool() {
-    if ! command -v fzf &>/dev/null; then
-        read -rp "fzf is not installed. Do you want to install it now? (y/n): " answer
-        if [[ "$answer" =~ ^[Yy]$ ]]; then
-            pkg_install fzf || die "Failed to install fzf."
-        else
-            die "fzf is required to run this script. Please install it and try again."
-        fi
+    if command -v fzf >/dev/null 2>&1; then
+        return
     fi
-}
 
-verify_fzf_tool
+    while true; do
+        read -rp "fzf is not installed. Install it now? [y/n]: " answer
+
+        case "$answer" in
+            [Yy])
+                log_info "Installing fzf..."
+                if pkg_install fzf; then
+                    log_info "fzf installed successfully."
+                    return
+                else
+                    die "Failed to install fzf."
+                fi
+                ;;
+            [Nn])
+                die "fzf is required to run this script."
+                ;;
+            *)
+                echo "Please answer y or n."
+                ;;
+        esac
+    done
+}
 
 install_tlp_module() {
     log_info "Setting up TLP power management..."
