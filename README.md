@@ -1,5 +1,5 @@
 # dsxtool
-My tool box for linux
+My toolbox for linux
 <img width="1916" height="492" alt="Captura_de_tela_20260309_235014" src="https://github.com/user-attachments/assets/58f681de-2e4d-4d06-a679-20062025069f" />
 
 
