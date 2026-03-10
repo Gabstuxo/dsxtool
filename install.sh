@@ -17,22 +17,29 @@ fi
 source "$BASE_DIR/core/distros/$DISTRO.sh"
 
 verify_fzf_tool() {
+
     if command -v fzf >/dev/null 2>&1; then
         return
     fi
 
+    log_info "fzf not found."
+
+    # modo não interativo (ex: curl | bash)
+    if [[ ! -t 0 ]]; then
+        log_info "Non-interactive mode detected. Installing fzf automatically..."
+        pkg_install fzf || die "Failed to install fzf."
+        return
+    fi
+
+    # modo interativo
     while true; do
-        read -rp "fzf is not installed. Install it now? [y/n]: " answer
+        read -rp "Install fzf now? [y/n]: " answer
 
         case "$answer" in
             [Yy])
                 log_info "Installing fzf..."
-                if pkg_install fzf; then
-                    log_info "fzf installed successfully."
-                    return
-                else
-                    die "Failed to install fzf."
-                fi
+                pkg_install fzf || die "Failed to install fzf."
+                return
                 ;;
             [Nn])
                 die "fzf is required to run this script."
@@ -43,6 +50,7 @@ verify_fzf_tool() {
         esac
     done
 }
+
 verify_fzf_tool
 
 install_tlp_module() {
