@@ -36,14 +36,18 @@ curl -fsSL https://raw.githubusercontent.com/csouzape/dsxtool/main/bootstrap.sh 
 | Option | Description |
 |--------|-------------|
 | **Install TLP** | Detects the current power manager (`tuned`, `power-profiles-daemon`, `system76-power`) and offers to replace it with TLP |
+| **Install Apps** | Module for installing various apps, including browser and development setup | 
 | **Install Alacritty** | Installs Alacritty and applies csouzape's config to `~/.config/alacritty/` |
+| **Install Konsole** | Installs Konsole |
+| **Install Kitty** | Installs Kitty |
+| **Install Ghostty** | Installs Ghostty |
 | **Update System** | Runs a full system upgrade using the distro's package manager |
 | **Setup Wallpapers** | Clones the wallpapers repository into `~/Imagens/wallpapers` |
 | **Change Desktop Environment** | Installs KDE Plasma, XFCE, Hyprland, Cosmic, or Hyprland (csouzape edition) |
 | **Fonts Downloader** | Downloads and installs Nerd Fonts and other developer fonts |
 | **Setup Flatpak** | Installs Flatpak and adds the Flathub remote |
 | **Setup Virtualization** | Installs QEMU/KVM, virt-manager, and configures libvirt |
-| **Setup Development Environment** | Installs languages (Python, C++, Rust, Go, Node.js) and IDEs (VS Code, Zed, Neovim/LazyVim, Kate) |
+| **Setup Shell** | Installs Shell, Zsh and fish config |
 | **Setup yay** *(Arch only)* | Installs the yay AUR helper |
 
 ---
