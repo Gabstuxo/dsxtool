@@ -1,5 +1,9 @@
-# dsxtool
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b9f20200-7b37-4b63-b66a-c26f76d7adb3" width="612" height="408" alt="dsxtool logo" />
+</p>
+
+<h1 align="center">dsxtool</h1>
 > A modular, interactive Linux setup tool — powered by `fzf`.
 <img width="1916" height="492" alt="Captura_de_tela_20260309_235014" src="https://github.com/user-attachments/assets/58f681de-2e4d-4d06-a679-20062025069f" />
 

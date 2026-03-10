@@ -12,6 +12,10 @@ install_kitty() {
     log_info "Kitty installed successfully."
 }
 
+setup_kitty() {
+    install_kitty
+}
+
 main() {
     install_kitty
 }

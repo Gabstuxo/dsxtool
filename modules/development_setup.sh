@@ -143,6 +143,22 @@ install_ide() {
                     || die "Failed to install Cursor."
             fi
             ;;
+        "Claude Code")
+            log_info "Installing Claude Code..."
+            if [[ "$DISTRO" == "arch" ]]; then
+                if ! command -v yay &>/dev/null; then
+                    die "yay is not installed. Please run 'Setup yay' first."
+                fi
+                yay -S --noconfirm claude-code-bin \
+                    && log_info "Claude Code installed successfully." \
+                    || die "Failed to install Claude Code."
+            else
+                log_info "Installing Claude Code via official installer..."
+                curl -fsSL https://claude.ai/install.sh | bash \
+                    && log_info "Claude Code installed successfully." \
+                    || die "Failed to install Claude Code."
+            fi
+            ;;
     esac
 }
 
@@ -346,7 +362,7 @@ menu_languages() {
 menu_ides() {
     local selections
     selections=$(printf '%s\n' \
-        "VS Code" "Zed" "NVIM (LazyVim)" "Kate" "Cursor" \
+        "VS Code" "Zed" "NVIM (LazyVim)" "Kate" "Cursor" "Claude Code" \
         | fzf -m \
               --prompt="IDEs > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \

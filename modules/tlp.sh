@@ -27,6 +27,20 @@ detect_manager() {
     return 1
 }
 
+manager_to_package() {
+    local manager="$1"
+
+    case "$DISTRO:$manager" in
+        arch:tlp|debian:tlp|fedora:tlp) echo "tlp" ;;
+        arch:tuned|debian:tuned|fedora:tuned) echo "tuned" ;;
+        arch:power-profiles-daemon|debian:power-profiles-daemon|fedora:power-profiles-daemon)
+            echo "power-profiles-daemon"
+            ;;
+        arch:system76-power|debian:system76-power|fedora:system76-power) echo "system76-power" ;;
+        *) echo "" ;;
+    esac
+}
+
 replace_manager_with_tlp() {
     local manager
     manager=$(detect_manager || true)
@@ -52,8 +66,16 @@ replace_manager_with_tlp() {
 
     read -rp "Do you want to remove '$manager' and install TLP instead? (y/n): " confirm
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
-        log_info "Removing $manager..."
-        pkg_remove "$manager"
+        local manager_pkg
+        manager_pkg="$(manager_to_package "$manager")"
+
+        if [[ -n "$manager_pkg" ]] && pkg_exists "$manager_pkg"; then
+            log_info "Removing package '$manager_pkg'..."
+            pkg_remove "$manager_pkg" || log_warn "Failed to remove package '$manager_pkg'."
+        else
+            log_warn "Could not map '$manager' to an installed package. Skipping removal step."
+        fi
+
         install_tlp
         log_info "Configuration complete."
     else

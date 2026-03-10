@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source "${BASE_DIR}/core/detect.sh"
-source "${BASE_DIR}/core/distros/$DISTRO.sh"
+update_system() {
+    log_info "Updating system..."
+    pkg_update
+    log_info "System update completed."
+}
