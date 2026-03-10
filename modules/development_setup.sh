@@ -38,8 +38,16 @@ install_lang() {
             ;;
         "Node.js")
             log_info "Installing Node.js..."
-            pkg_install nodejs npm
-            log_info "Node.js installed successfully."
+            local missing=()
+            pkg_exists nodejs || missing+=(nodejs)
+            pkg_exists npm    || missing+=(npm)
+            if [[ ${#missing[@]} -eq 0 ]]; then
+                log_warn "Node.js and npm are already installed. Skipping."
+                return 0
+            fi
+            pkg_install "${missing[@]}" \
+                && log_info "Node.js installed successfully." \
+                || die "Failed to install Node.js."
             ;;
         "Java (OpenJDK 17)")
             log_info "Installing OpenJDK 17 + Maven + Gradle..."
@@ -121,12 +129,19 @@ install_ide() {
             ;;
         "Cursor")
             log_info "Installing Cursor..."
-            if ! command -v yay &>/dev/null; then
-                die "yay is not installed. Please run 'Setup yay' first."
+            if [[ "$DISTRO" == "arch" ]]; then
+                if ! command -v yay &>/dev/null; then
+                    die "yay is not installed. Please run 'Setup yay' first."
+                fi
+                yay -S --noconfirm cursor-bin \
+                    && log_info "Cursor installed successfully." \
+                    || die "Failed to install Cursor."
+            else
+                log_info "Installing Cursor via Flatpak..."
+                flatpak install -y flathub com.cursor.Cursor \
+                    && log_info "Cursor installed successfully." \
+                    || die "Failed to install Cursor."
             fi
-            yay -S --noconfirm cursor-bin \
-                && log_info "Cursor installed successfully." \
-                || die "Failed to install Cursor."
             ;;
     esac
 }
@@ -149,9 +164,27 @@ install_devtool() {
         "PostgreSQL")
             log_info "Installing PostgreSQL..."
             case "$DISTRO" in
-                arch)   pkg_install postgresql ;;
-                debian) pkg_install postgresql postgresql-contrib ;;
-                fedora) pkg_install postgresql-server postgresql-contrib ;;
+                arch)
+                    pkg_install postgresql \
+                        || die "Failed to install PostgreSQL."
+                    if [[ ! -d /var/lib/postgres/data/base ]]; then
+                        log_info "Initializing PostgreSQL database cluster..."
+                        sudo -u postgres initdb -D /var/lib/postgres/data \
+                            || die "Failed to initialize PostgreSQL."
+                    else
+                        log_warn "PostgreSQL data directory already exists. Skipping initdb."
+                    fi
+                    ;;
+                debian)
+                    pkg_install postgresql postgresql-contrib \
+                        || die "Failed to install PostgreSQL."
+                    ;;
+                fedora)
+                    pkg_install postgresql-server postgresql-contrib \
+                        || die "Failed to install PostgreSQL."
+                    sudo postgresql-setup --initdb \
+                        || log_warn "PostgreSQL initdb may have already been run."
+                    ;;
             esac
             sudo systemctl enable --now postgresql \
                 || log_warn "Failed to enable PostgreSQL service."
@@ -287,10 +320,6 @@ install_devtool() {
     esac
 }
 
-
-
-
-
 menu_languages() {
     local selections
     selections=$(printf '%s\n' \
@@ -335,6 +364,7 @@ menu_ides() {
         install_ide "$ide"
     done <<< "$selections"
 }
+
 menu_devtools() {
     local selections
     selections=$(printf '%s\n' \
@@ -365,7 +395,6 @@ menu_devtools() {
         install_devtool "$tool"
     done <<< "$selections"
 }
-
 
 setup_development() {
     while true; do
