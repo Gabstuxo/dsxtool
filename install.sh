@@ -100,7 +100,7 @@ install_fonts_module() {
 install_flatpak_module() {
     log_info "Setting up Flatpak..."
     source "$BASE_DIR/modules/flatpak.sh"
-    setup_flatpak
+    main
     log_info "Flatpak setup finished."
 }
 
