@@ -55,25 +55,36 @@ curl -fsSL https://raw.githubusercontent.com/csouzape/dsxtool/main/bootstrap.sh 
 ## Project Structure
 
 ```
-dsxtool/
-├── install.sh              # Entry point
-├── core/
-│   ├── common.sh           # Logging, die(), prompt_continue()
-│   ├── detect.sh           # Distro detection → $DISTRO
-│   └── distros/
-│       ├── arch.sh         # pkg_install / pkg_remove / pkg_exists (pacman)
-│       ├── debian.sh       # pkg_install / pkg_remove / pkg_exists (apt)
-│       └── fedora.sh       # pkg_install / pkg_remove / pkg_exists (dnf)
-└── modules/
-    ├── tlp.sh
-    ├── alacritty.sh
-    ├── change_desktop.sh
-    ├── wallpapers.sh
-    ├── fonts.sh
-    ├── flatpak.sh
-    ├── setup_virtualization.sh
-    ├── development_setup.sh
-    └── setupyay.sh
+.
+|-- LICENSE
+|-- README.md
+|-- bootstrap.sh
+|-- core
+|   |-- common.sh
+|   |-- detect.sh
+|   `-- distros
+|       |-- arch.sh
+|       |-- debian.sh
+|       `-- fedora.sh
+|-- install.sh
+`-- modules
+    |-- alacritty.sh
+    |-- change_desktop.sh
+    |-- development_setup.sh
+    |-- flatpak.sh
+    |-- fonts.sh
+    |-- ghostty.sh
+    |-- install_apps.sh
+    |-- kitty.sh
+    |-- konsole.sh
+    |-- setup_virtualization.sh
+    |-- setupyay.sh
+    |-- shell_personalization.sh
+    |-- tlp.sh
+    |-- update_system.sh
+    `-- wallpapers.sh
+
+4 directories, 24 files
 ```
 
 ---
