@@ -26,10 +26,7 @@ Supports **Arch Linux**, **Debian/Ubuntu**, and **Fedora**.
 ## Installation
 
 ```bash
-git clone https://github.com/csouzape/dsxtool
-cd dsxtool
-chmod +x install.sh
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/csouzape/dsxtool/main/bootstrap.sh | bash
 ```
 
 ---
