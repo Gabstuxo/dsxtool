@@ -9,6 +9,7 @@ APP_REGISTRY["Chromium"]="pkg|chromium|org.chromium.Chromium|-"
 APP_REGISTRY["Brave"]="flatpak|-|com.brave.Browser|-"
 APP_REGISTRY["Zen Browser"]="flatpak|-|app.zen_browser.zen|-"
 
+
 APP_REGISTRY["VLC"]="pkg|vlc|org.videolan.VLC|-"
 APP_REGISTRY["Spotify"]="flatpak|-|com.spotify.Client|-"
 APP_REGISTRY["Celluloid"]="pkg|celluloid|io.github.celluloid_player.Celluloid|-"
@@ -22,7 +23,8 @@ APP_REGISTRY["Slack"]="flatpak|-|com.slack.Slack|-"
 
 APP_REGISTRY["LibreOffice"]="pkg|libreoffice|org.libreoffice.LibreOffice|-"
 APP_REGISTRY["Obsidian"]="flatpak|-|md.obsidian.Obsidian|-"
-APP_REGISTRY["Notion"]="flatpak|-|notion.id.Notion|-"
+
+
 APP_REGISTRY["Thunderbird"]="pkg|thunderbird|org.mozilla.Thunderbird|-"
 APP_REGISTRY["Bitwarden"]="flatpak|-|com.bitwarden.desktop|-"
 
@@ -144,7 +146,6 @@ menu_productivity() {
     _category_menu "Productivity" \
         "LibreOffice" \
         "Obsidian" \
-        "Notion" \
         "Thunderbird" \
         "Bitwarden" 
 }

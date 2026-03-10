@@ -24,14 +24,14 @@ verify_fzf_tool() {
 
     log_info "fzf not found."
 
-    # modo não interativo (ex: curl | bash)
+    
     if [[ ! -t 0 ]]; then
         log_info "Non-interactive mode detected. Installing fzf automatically..."
         pkg_install fzf || die "Failed to install fzf."
         return
     fi
 
-    # modo interativo
+
     while true; do
         read -rp "Install fzf now? [y/n]: " answer
 
