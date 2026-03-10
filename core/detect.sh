@@ -27,14 +27,6 @@ detect_distro() {
             DISTRO="fedora"
             ;;
 
-        opensuse*|sles|sled)
-            DISTRO="suse"
-            ;;
-
-        void)
-            DISTRO="void"
-            ;;
-
         *)
             if [[ "$DISTRO_LIKE" == *arch* ]]; then
                 DISTRO="arch"
@@ -42,8 +34,6 @@ detect_distro() {
                 DISTRO="debian"
             elif [[ "$DISTRO_LIKE" == *rhel* ]] || [[ "$DISTRO_LIKE" == *fedora* ]]; then
                 DISTRO="fedora"
-            elif [[ "$DISTRO_LIKE" == *suse* ]]; then
-                DISTRO="suse"
             else
                 echo "Unsupported distribution: $DISTRO_RAW"
                 exit 1

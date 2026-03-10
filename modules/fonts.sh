@@ -47,22 +47,23 @@ install_meslo() {
     log_info "'$FONT_NAME' installed successfully."
 }
 
-# --- main ---
+setup_fonts() {
+    local selected
+    selected=$(printf '%s\n' "${font_list[@]}" | fzf \
+        --prompt="Escolha uma fonte: " \
+        --height=40% \
+        --border \
+        --ansi)
 
-selected=$(printf '%s\n' "${font_list[@]}" | fzf \
-    --prompt="Escolha uma fonte: " \
-    --height=40% \
-    --border \
-    --ansi)
+    if [[ -z "$selected" ]]; then
+        log_warn "Nenhuma fonte selecionada."
+        return 0
+    fi
 
-if [[ -z "$selected" ]]; then
-    log_warn "Nenhuma fonte selecionada."
-    exit 0
-fi
-
-if [[ "$selected" == "meslo-nerd-font" ]]; then
-    install_meslo
-else
-    log_info "Instalando '$selected'..."
-    pkg_install "$selected"
-fi
+    if [[ "$selected" == "meslo-nerd-font" ]]; then
+        install_meslo
+    else
+        log_info "Instalando '$selected'..."
+        pkg_install "$selected"
+    fi
+}

@@ -22,24 +22,23 @@ install_virtualization() {
         libguestfs-tools dmidecode
     )
 
-    if command -v pacman &>/dev/null; then
-        log_info "Detected Arch Linux, installing virtualization packages..."
-        sudo pacman -S --noconfirm --needed --ask 4 "${arch_packages[@]}" \
-            || die "Failed to install virtualization packages."
-
-    elif command -v apt &>/dev/null; then
-        log_info "Detected Debian/Ubuntu, installing virtualization packages..."
-        sudo apt install -y "${debian_packages[@]}" \
-            || die "Failed to install virtualization packages."
-
-    elif command -v dnf &>/dev/null; then
-        log_info "Detected Fedora, installing virtualization packages..."
-        sudo dnf install -y "${fedora_packages[@]}" \
-            || die "Failed to install virtualization packages."
-
-    else
-        die "Unsupported distro: could not find pacman, apt, or dnf."
-    fi
+    case "$DISTRO" in
+        arch)
+            log_info "Detected Arch Linux, installing virtualization packages..."
+            pkg_install "${arch_packages[@]}" || die "Failed to install virtualization packages."
+            ;;
+        debian)
+            log_info "Detected Debian/Ubuntu, installing virtualization packages..."
+            pkg_install "${debian_packages[@]}" || die "Failed to install virtualization packages."
+            ;;
+        fedora)
+            log_info "Detected Fedora, installing virtualization packages..."
+            pkg_install "${fedora_packages[@]}" || die "Failed to install virtualization packages."
+            ;;
+        *)
+            die "Unsupported distro for virtualization setup: $DISTRO"
+            ;;
+    esac
 
     log_info "Virtualization packages installed successfully."
 }
@@ -49,29 +48,38 @@ libvirt_setup() {
 
     [[ ! -f "$config_file" ]] && die "Config file $config_file not found."
 
-    sed -i 's/^[[:space:]]*#[[:space:]]*\(unix_sock_group = "libvirt"\)/\1/'    "$config_file"
-    sed -i 's/^[[:space:]]*#[[:space:]]*\(unix_sock_rw_perms = "0770"\)/\1/'   "$config_file"
+    sudo sed -i 's/^[[:space:]]*#[[:space:]]*\(unix_sock_group = "libvirt"\)/\1/' "$config_file"
+    sudo sed -i 's/^[[:space:]]*#[[:space:]]*\(unix_sock_rw_perms = "0770"\)/\1/' "$config_file"
 
     log_info "Libvirt configuration updated successfully."
 }
 
 user_setup() {
     local target_user="${SUDO_USER:-${USER:-$(logname)}}"
-    usermod -aG libvirt "$target_user" || die "Failed to add $target_user to libvirt group."
+    sudo usermod -aG libvirt "$target_user" || die "Failed to add $target_user to libvirt group."
     log_info "User $target_user added to libvirt group. Restart session to apply."
 }
 
 service_setup() {
-    systemctl enable --now libvirtd || die "Failed to enable/start libvirtd service."
+    sudo systemctl enable --now libvirtd || die "Failed to enable/start libvirtd service."
     log_info "Libvirtd service enabled and started."
 
-    virsh net-autostart default || log_warn "Failed to set default network to autostart."
-    virsh net-start default 2>/dev/null || true
+    sudo virsh net-autostart default || log_warn "Failed to set default network to autostart."
+    sudo virsh net-start default 2>/dev/null || true
     log_info "Default virtual network configured."
 }
 
+virtualization_installed() {
+    case "$DISTRO" in
+        arch) pkg_exists qemu-desktop && pkg_exists virt-manager ;;
+        debian) pkg_exists qemu-kvm && pkg_exists virt-manager ;;
+        fedora) pkg_exists qemu-kvm && pkg_exists virt-manager ;;
+        *) return 1 ;;
+    esac
+}
+
 main() {
-    if ! pkg_exists qemu || ! pkg_exists virt-manager; then
+    if ! virtualization_installed; then
         read -rp "Virtualization packages are not installed. Do you want to install them now? (y/n): " confirm
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             install_virtualization
@@ -86,4 +94,8 @@ main() {
     libvirt_setup
     user_setup
     service_setup
+}
+
+setup_virtualization() {
+    main
 }
