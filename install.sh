@@ -86,7 +86,7 @@ install_flatpak_module() {
 install_virtualization_module() {
     log_info "Setting up virtualization tools..."
     source "$BASE_DIR/modules/setup_virtualization.sh"
-    setup_virtualization
+    main
     log_info "Virtualization setup finished."
 }
 
