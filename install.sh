@@ -125,7 +125,6 @@ change_desktop_module() {
     log_info "Desktop environment setup finished."
 }
 
-# --- Menu ---
 
 build_menu() {
     local options=(
