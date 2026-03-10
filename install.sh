@@ -138,7 +138,7 @@ install_virtualization_module() {
 
 install_shell_module() {
     log_info "Setting up shell..."
-    source "$BASE_DIR/modules/shell_setup.sh"
+    source "$BASE_DIR/modules/shell_personalization.sh"
     setup_shell
     log_info "Shell setup finished."
 }

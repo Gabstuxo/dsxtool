@@ -25,5 +25,3 @@ setup_yay() {
     fi
 }
 
-setup_yay 
-

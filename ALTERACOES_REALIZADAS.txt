@@ -1,0 +1,65 @@
+DSXTOOL - ALTERACOES REALIZADAS
+Data: 10/03/2026
+
+1) Correcao de modulo Shell no menu principal
+- Arquivo: install.sh
+- Alteracao: troca de source de modules/shell_setup.sh para modules/shell_personalization.sh.
+- Motivo: o arquivo shell_setup.sh nao existia e quebrava a opcao "Setup Shell".
+
+2) Ajuste de deteccao de distribuicao para refletir suporte real
+- Arquivo: core/detect.sh
+- Alteracao: remocao dos mapeamentos para suse e void.
+- Motivo: nao existem backends em core/distros para essas distribuicoes.
+
+3) Robustez no fluxo de TLP
+- Arquivo: modules/tlp.sh
+- Alteracao: adicao da funcao manager_to_package e remocao condicional segura do pacote detectado.
+- Motivo: binario detectado nem sempre e igual ao nome do pacote.
+
+4) Alinhamento do modulo de virtualizacao com abstracao de distro
+- Arquivo: modules/setup_virtualization.sh
+- Alteracoes:
+  - uso de case "$DISTRO" e pkg_install (removendo deteccao por pacman/apt/dnf).
+  - comandos privilegiados com sudo para sed/usermod/systemctl/virsh.
+  - adicao da funcao virtualization_installed com checagem por distro.
+  - adicao de entrypoint setup_virtualization().
+- Motivo: consistencia com arquitetura do projeto e correcoes de runtime.
+
+5) Correcao de entrypoints de modulos de terminal
+- Arquivos: modules/konsole.sh e modules/kitty.sh
+- Alteracao: adicao de setup_konsole() e setup_kitty().
+- Motivo: install.sh chamava essas funcoes, mas elas nao existiam.
+
+6) Correcao do modulo de fontes
+- Arquivo: modules/fonts.sh
+- Alteracao:
+  - criacao de setup_fonts() como ponto de entrada.
+  - remocao da execucao imediata ao carregar o modulo.
+- Motivo: install.sh chama setup_fonts; antes o script executava no source e nao expunha o entrypoint esperado.
+
+7) Correcao e expansao do modulo de desenvolvimento
+- Arquivo: modules/development_setup.sh
+- Alteracoes:
+  - ajuste do bloco "Claude Code" dentro do case de IDEs (incluindo terminador ";;").
+  - correcao do pipeline de instalacao via curl para nao quebrar sintaxe.
+  - inclusao de "Claude Code" na lista exibida em menu_ides().
+- Motivo: havia risco de erro de sintaxe e a opcao nao aparecia no menu.
+
+8) Remocao de autoexecucao do modulo yay
+- Arquivo: modules/setupyay.sh
+- Alteracao: remocao da chamada setup_yay no fim do arquivo.
+- Motivo: modulo deve apenas declarar funcoes; execucao fica no fluxo do menu principal.
+
+9) Ajuste no modulo de update
+- Arquivo: modules/update_system.sh
+- Alteracao: substituicao de conteudo incompleto por funcao util update_system().
+- Motivo: eliminar modulo inutil/incompleto e deixar comportamento coerente.
+
+10) Melhoria de documentacao para contribuicao
+- Arquivo: contributing.md
+- Alteracao: troca de "compiles without warnings" por validacao/lint para scripts Bash (bash -n e shellcheck).
+- Motivo: adequar instrucoes ao tipo de projeto.
+
+Observacao:
+- Nao foi possivel executar validacao bash -n no ambiente atual porque o terminal nao possui bash instalado no Windows.
+- A validacao recomendada deve ser executada em Linux/WSL ou ambiente com bash e shellcheck disponiveis.
