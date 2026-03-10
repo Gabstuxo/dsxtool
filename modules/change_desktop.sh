@@ -22,39 +22,23 @@ _fzf_confirm() {
     [[ "$choice" == "Sim" ]]
 }
 
-
-install_kde() {
+_install_desktop() {
+    local name="$1"
+    local key="$2"
     local pkg
-    pkg=$(get_desktop_packages "kde")
-    log_info "Instalando KDE Plasma (pacotes: $pkg)..."
-    _fzf_confirm "Prosseguir com a instalação do KDE Plasma?" \
+    pkg=$(get_desktop_packages "$key")
+    log_info "Instalando $name (pacotes: $pkg)..."
+    _fzf_confirm "Prosseguir com a instalação do $name?" \
         || { log_warn "Instalação cancelada."; return 0; }
     pkg_install $pkg \
-        && log_info "KDE Plasma instalado com sucesso." \
-        || log_error "Falha na instalação."
+        && log_info "$name instalado com sucesso." \
+        || die "Falha na instalação do $name."
 }
 
-install_xfce() {
-    local pkg
-    pkg=$(get_desktop_packages "xfce")
-    log_info "Instalando XFCE (pacotes: $pkg)..."
-    _fzf_confirm "Prosseguir com a instalação do XFCE?" \
-        || { log_warn "Instalação cancelada."; return 0; }
-    pkg_install $pkg \
-        && log_info "XFCE instalado com sucesso." \
-        || log_error "Falha na instalação."
-}
-
-install_hyprland() {
-    local pkg
-    pkg=$(get_desktop_packages "hyprland")
-    log_info "Instalando Hyprland (pacotes: $pkg)..."
-    _fzf_confirm "Prosseguir com a instalação do Hyprland?" \
-        || { log_warn "Instalação cancelada."; return 0; }
-    pkg_install $pkg \
-        && log_info "Hyprland instalado com sucesso." \
-        || log_error "Falha na instalação."
-}
+install_kde()      { _install_desktop "KDE Plasma" "kde"; }
+install_xfce()     { _install_desktop "XFCE" "xfce"; }
+install_hyprland() { _install_desktop "Hyprland" "hyprland"; }
+install_cosmic()   { _install_desktop "Cosmic" "cosmic"; }
 
 install_hyprland_csouzape() {
     local repo_url="https://github.com/csouzape/hyprdots"
@@ -64,8 +48,7 @@ install_hyprland_csouzape() {
         || { log_warn "Instalação cancelada."; return 0; }
 
     if ! command -v git &>/dev/null; then
-        log_error "Git não está instalado."
-        return 1
+        die "Git não está instalado."
     fi
 
     local tmp_dir
@@ -73,39 +56,38 @@ install_hyprland_csouzape() {
 
     log_info "Clonando $repo_url..."
     git clone "$repo_url" "$tmp_dir" || {
-        log_error "Falha ao clonar repositório."
         rm -rf "$tmp_dir"
-        return 1
+        die "Falha ao clonar repositório."
     }
 
-    cd "$tmp_dir" || { log_error "Falha ao entrar no repositório."; return 1; }
-    chmod +x hyprdots.sh
-    sudo ./hyprdots.sh
+    chmod +x "$tmp_dir/hyprdots.sh"
+    sudo "$tmp_dir/hyprdots.sh" || {
+        rm -rf "$tmp_dir"
+        die "Falha ao executar hyprdots.sh."
+    }
 
-    cd - >/dev/null
     rm -rf "$tmp_dir"
     log_info "Config Hyprland do csouzape instalada com sucesso."
 }
 
-
 prompt_change_desktop() {
     _require_fzf || return 1
-
 
     local -A actions=(
         ["󰧨  KDE Plasma"]="install_kde"
         ["  XFCE"]="install_xfce"
         ["  Hyprland"]="install_hyprland"
         ["  Hyprland (csouzape edition)"]="install_hyprland_csouzape"
+        ["  Cosmic"]="install_cosmic"
         ["  Sair"]="__exit__"
     )
 
- 
     local options=(
         "󰧨  KDE Plasma"
         "  XFCE"
         "  Hyprland"
         "  Hyprland (csouzape edition)"
+        "  Cosmic"
         "  Sair"
     )
 
@@ -113,7 +95,7 @@ prompt_change_desktop() {
     selected=$(printf '%s\n' "${options[@]}" \
         | fzf --prompt="Ambiente de Desktop > " \
               --header="Selecione o DE para instalar" \
-              --height=12 \
+              --height=13 \
               --layout=reverse \
               --border=rounded \
               --pointer="▶" \
@@ -124,10 +106,7 @@ prompt_change_desktop() {
     [[ -z "$selected" ]] && { log_warn "Nenhuma opção selecionada."; return 0; }
 
     local fn="${actions[$selected]}"
-    if [[ "$fn" == "__exit__" ]]; then
-        log_info "Saindo."
-        return 0
-    fi
+    [[ "$fn" == "__exit__" ]] && { log_info "Saindo."; return 0; }
 
     "$fn"
 }

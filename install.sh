@@ -17,22 +17,16 @@ verify_fzf_tool() {
     if ! command -v fzf &>/dev/null; then
         read -rp "fzf is not installed. Do you want to install it now? (y/n): " answer
         if [[ "$answer" =~ ^[Yy]$ ]]; then
-            if [[ "$DISTRO" == "arch" ]]; then
-                sudo pacman -S --noconfirm fzf
-            elif [[ "$DISTRO" == "ubuntu" ]]; then
-                sudo apt install -y fzf
-            elif [[ "$DISTRO" == "fedora" ]]; then
-                sudo dnf install -y fzf
-            else
-                die "Please install fzf manually and re-run the script."
-            fi
+            pkg_install fzf || die "Failed to install fzf."
         else
             die "fzf is required to run this script. Please install it and try again."
         fi
     fi
 }
+
 verify_fzf_tool
 
+# --- Modules ---
 
 install_tlp_module() {
     log_info "Setting up TLP power management..."
@@ -78,8 +72,8 @@ install_yay_module() {
 install_fonts_module() {
     log_info "Setting up fonts..."
     source "$BASE_DIR/modules/fonts.sh"
+    setup_fonts
     log_info "Fonts setup finished."
-
 }
 
 install_flatpak_module() {
@@ -89,23 +83,44 @@ install_flatpak_module() {
     log_info "Flatpak setup finished."
 }
 
+install_virtualization_module() {
+    log_info "Setting up virtualization tools..."
+    source "$BASE_DIR/modules/setup_virtualization.sh"
+    setup_virtualization
+    log_info "Virtualization setup finished."
+}
+
+install_development_module() {
+    log_info "Setting up development environment..."
+    source "$BASE_DIR/modules/development_setup.sh"
+    setup_development
+    log_info "Development environment setup finished."
+}
+
+
 
 build_menu() {
     local options=(
-        "1) Install TLP"
-        "2) Install Alacritty"
-        "3) Update System"
-        "4) Setup Wallpapers"
-        "5) Change Desktop Environment"
-        "6) Fonts Downloader"
-        "7) Setup Flatpak"
-        "8) Setup Virtualization"
-        "9) Exit"
+        "1)  Install TLP"
+        "2)  Install Alacritty"
+        "3)  Update System"
+        "4)  Setup Wallpapers"
+        "5)  Change Desktop Environment"
+        "6)  Fonts Downloader"
+        "7)  Setup Flatpak"
+        "8)  Setup Virtualization"
+        "9)  Setup Development Environment"
     )
-    [[ "$DISTRO" == "arch" ]] && options+=("10) Setup yay (AUR helper)")
+
+    local idx=10
+    [[ "$DISTRO" == "arch" ]] && {
+        options+=("$idx)  Setup yay (AUR helper)")
+        (( idx++ ))
+    }
+    options+=("$idx)  Exit")
+
     printf '%s\n' "${options[@]}"
 }
-
 
 run_menu() {
     build_menu | fzf \
@@ -119,25 +134,37 @@ run_menu() {
 main() {
     while true; do
         clear
-        choice=$(run_menu)
+        local choice
+        choice=$(run_menu || true)
+
+        [[ -z "$choice" ]] && continue
 
         case "$choice" in
-            "1)"*) install_tlp_module ;;
-            "2)"*) install_alacritty_module ;;
-            "3)"*) update_system_module ;;
-            "4)"*) install_wallpapers_module ;;
-            "5)"*) change_desktop_module ;;
-            "6)"*) install_fonts_module ;;
-            "7)"*) install_flatpak_module ;;
-            "8)"*) install_virtualization_module ;;
-            "9)"*) [[ "$DISTRO" == "arch" ]] && install_yay_module ;;
+            "1)"*)  install_tlp_module ;;
+            "2)"*)  install_alacritty_module ;;
+            "3)"*)  update_system_module ;;
+            "4)"*)  install_wallpapers_module ;;
+            "5)"*)  change_desktop_module ;;
+            "6)"*)  install_fonts_module ;;
+            "7)"*)  install_flatpak_module ;;
+            "8)"*)  install_virtualization_module ;;
+            "9)"*)  install_development_module ;;
             "10)"*)
+                if [[ "$DISTRO" == "arch" ]]; then
+                    install_yay_module
+                else
+                    log_info "Exiting..."
+                    exit 0
+                fi
+                ;;
+            "11)"*)
                 log_info "Exiting..."
                 exit 0
                 ;;
             *)
                 log_error "Invalid option."
                 sleep 1
+                continue
                 ;;
         esac
 

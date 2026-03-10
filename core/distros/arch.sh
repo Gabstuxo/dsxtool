@@ -13,7 +13,7 @@ pkg_update() {
 }
 
 pkg_install() {
-    sudo pacman -S --noconfirm "$@"
+    sudo pacman -S --noconfirm --needed "$@"
 }
 
 pkg_remove() {
