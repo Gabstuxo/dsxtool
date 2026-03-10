@@ -62,7 +62,7 @@ install_hyprland_csouzape() {
 
     chmod +x "$tmp_dir/hyprdots.sh"
 
-    if ! bash "$tmp_dir/hyprdots.sh"; then
+    if ! sudo "$tmp_dir/hyprdots.sh"; then
         rm -rf "$tmp_dir"
         log_warn "hyprdots.sh encerrou com erro ou foi cancelado."
         return 1
