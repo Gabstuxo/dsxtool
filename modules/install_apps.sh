@@ -33,7 +33,7 @@ APP_REGISTRY["Lutris"]="pkg|lutris|net.lutris.Lutris|-"
 APP_REGISTRY["Heroic Games Launcher"]="flatpak|-|com.heroicgameslauncher.hgl|-"
 APP_REGISTRY["ProtonUp-Qt"]="flatpak|-|net.davidotek.pupgui2|-"
 APP_REGISTRY["MangoHud"]="pkg|mangohud|-|-"
-
+APP_REGISTRY["Sober"]="flatpak|-|org.vinegarhq.Sober|-"
 
 _install_app() {
     local app="$1"
@@ -156,7 +156,8 @@ menu_gaming() {
         "Lutris" \
         "Heroic Games Launcher" \
         "ProtonUp-Qt" \
-        "MangoHud"
+        "MangoHud" \
+        "Sober"
 }
 setup_apps() {
     while true; do
