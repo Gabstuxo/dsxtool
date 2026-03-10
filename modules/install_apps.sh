@@ -9,7 +9,6 @@ APP_REGISTRY["Chromium"]="pkg|chromium|org.chromium.Chromium|-"
 APP_REGISTRY["Brave"]="flatpak|-|com.brave.Browser|-"
 APP_REGISTRY["Zen Browser"]="flatpak|-|app.zen_browser.zen|-"
 
-
 APP_REGISTRY["VLC"]="pkg|vlc|org.videolan.VLC|-"
 APP_REGISTRY["Spotify"]="flatpak|-|com.spotify.Client|-"
 APP_REGISTRY["Celluloid"]="pkg|celluloid|io.github.celluloid_player.Celluloid|-"
