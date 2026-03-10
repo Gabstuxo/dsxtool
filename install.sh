@@ -82,6 +82,13 @@ install_fonts_module() {
 
 }
 
+install_flatpak_module() {
+    log_info "Setting up Flatpak..."
+    source "$BASE_DIR/modules/flatpak.sh"
+    main
+    log_info "Flatpak setup finished."
+}
+
 
 build_menu() {
     local options=(
@@ -91,9 +98,11 @@ build_menu() {
         "4) Setup Wallpapers"
         "5) Change Desktop Environment"
         "6) Fonts Downloader"
-        "7) Exit"
+        "7) Setup Flatpak"
+        "8) Setup Virtualization"
+        "9) Exit"
     )
-    [[ "$DISTRO" == "arch" ]] && options+=("7) Setup yay (AUR helper)")
+    [[ "$DISTRO" == "arch" ]] && options+=("10) Setup yay (AUR helper)")
     printf '%s\n' "${options[@]}"
 }
 
@@ -119,8 +128,10 @@ main() {
             "4)"*) install_wallpapers_module ;;
             "5)"*) change_desktop_module ;;
             "6)"*) install_fonts_module ;;
-            "7)"*) [[ "$DISTRO" == "arch" ]] && install_yay_module ;;
-            "8)"*)
+            "7)"*) install_flatpak_module ;;
+            "8)"*) install_virtualization_module ;;
+            "9)"*) [[ "$DISTRO" == "arch" ]] && install_yay_module ;;
+            "10)"*)
                 log_info "Exiting..."
                 exit 0
                 ;;
