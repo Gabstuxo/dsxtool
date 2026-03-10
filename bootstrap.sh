@@ -5,25 +5,32 @@ REPO="https://github.com/csouzape/dsxtool.git"
 INSTALL_DIR="$HOME/.local/share/dsxtool"
 
 if ! command -v git >/dev/null 2>&1; then
-    log_info "git not found. Installing..."
-    pkg_install git || die "Failed to install git."
+    echo "[INFO] git not found. Installing..."
+    if command -v pacman >/dev/null 2>&1; then
+        sudo pacman -S --noconfirm --needed git
+    elif command -v apt >/dev/null 2>&1; then
+        sudo apt install -y git
+    elif command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y git
+    else
+        echo "[ERROR] Cannot install git. Please install it manually."
+        exit 1
+    fi
 fi
 
 if [[ -d "$INSTALL_DIR/.git" ]]; then
-    echo "Updating dsxtool..."
+    echo "[INFO] Updating dsxtool..."
     git -C "$INSTALL_DIR" fetch origin
     git -C "$INSTALL_DIR" reset --hard origin/main
 else
-    echo "Installing dsxtool..."
+    echo "[INFO] Installing dsxtool..."
     rm -rf "$INSTALL_DIR"
     git clone "$REPO" "$INSTALL_DIR"
 fi
 
-INSTALL_SCRIPT="$INSTALL_DIR/install.sh"
-
-if [[ ! -f "$INSTALL_SCRIPT" ]]; then
-    echo "install.sh not found"
+if [[ ! -f "$INSTALL_DIR/install.sh" ]]; then
+    echo "[ERROR] install.sh not found."
     exit 1
 fi
 
-exec bash "$INSTALL_SCRIPT"
+exec bash "$INSTALL_DIR/install.sh"
