@@ -1,6 +1,7 @@
 # dsxtool
 My tool box for linux
-<img width="488" height="348" alt="image" src="https://github.com/user-attachments/assets/74263a0d-5740-41f1-b2e2-e46c2c23c769" />
+<img width="1916" height="492" alt="Captura_de_tela_20260309_235014" src="https://github.com/user-attachments/assets/58f681de-2e4d-4d06-a679-20062025069f" />
+
 
 
 ## Installation
