@@ -61,10 +61,12 @@ install_hyprland_csouzape() {
     }
 
     chmod +x "$tmp_dir/hyprdots.sh"
-    sudo "$tmp_dir/hyprdots.sh" || {
+
+    if ! bash "$tmp_dir/hyprdots.sh"; then
         rm -rf "$tmp_dir"
-        die "Falha ao executar hyprdots.sh."
-    }
+        log_warn "hyprdots.sh encerrou com erro ou foi cancelado."
+        return 1
+    fi
 
     rm -rf "$tmp_dir"
     log_info "Config Hyprland do csouzape instalada com sucesso."
