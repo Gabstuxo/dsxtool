@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-
-
 set -euo pipefail
 
 RED='\033[0;31m'
@@ -22,12 +20,10 @@ log_error() {
     echo -e "${RED}[ERROR]${RESET} $*"
 }
 
-
 die() {
     log_error "$*"
     exit 1
 }
-
 
 require_sudo() {
     if [[ $EUID -ne 0 ]] && ! sudo -n true 2>/dev/null; then
@@ -35,7 +31,6 @@ require_sudo() {
     fi
 }
 
-# Wait for user to continue
 prompt_continue() {
     read -rp "$(echo -e "${YELLOW}Press Enter to continue...${RESET}")"
 }
