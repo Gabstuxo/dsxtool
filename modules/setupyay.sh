@@ -12,6 +12,10 @@ setup_yay() {
         return 1
     fi
 
+    if [[ $EUID -eq 0 ]]; then
+        die "yay cannot be built as root. Please run dsxtool as a normal user."
+    fi
+
     read -rp "Do you want to install yay? (y/n): " confirm < /dev/tty
     if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
         log_warn "Skipping yay installation."
