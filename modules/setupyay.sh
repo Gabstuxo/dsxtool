@@ -22,6 +22,10 @@ setup_yay() {
         return 0
     fi
 
+    log_info "Installing base-devel (required for makepkg)..."
+    sudo pacman -S --noconfirm --needed base-devel \
+        || die "Failed to install base-devel."
+
     log_info "Installing yay..."
 
     local tmp_dir
