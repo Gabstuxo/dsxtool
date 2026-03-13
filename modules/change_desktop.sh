@@ -85,7 +85,7 @@ prompt_change_desktop() {
     )
 
     local options=(
-        "󰧨  KDE Plasma"
+        "  KDE Plasma"
         "  XFCE"
         "  Hyprland"
         "  Hyprland (csouzape edition)"
