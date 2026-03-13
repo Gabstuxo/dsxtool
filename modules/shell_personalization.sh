@@ -81,7 +81,7 @@ set_default_shell() {
 setup_shell() {
     local choice
     choice=$(printf '%s\n' "zsh" "fish" "Cancel" \
-        | _fzf \
+        | fzf \
               --prompt="Shell > " \
               --header="Select a shell to install" \
               --height=8 \
