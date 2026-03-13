@@ -100,7 +100,7 @@ install_fonts_module() {
 
 install_flatpak_module() {
     source "$BASE_DIR/modules/flatpak.sh"
-    setup_flatpak
+    main
 }
 
 install_virtualization_module() {
@@ -118,9 +118,6 @@ change_desktop_module() {
     prompt_change_desktop
 }
 
-# --------------------------------------------------
-# banner
-# --------------------------------------------------
 
 BANNER=$(cat <<EOF
   ██████╗ ███████╗██╗  ██╗████████╗ ██████╗  ██████╗ ██╗
@@ -132,9 +129,6 @@ BANNER=$(cat <<EOF
 EOF
 )
 
-# --------------------------------------------------
-# menu
-# --------------------------------------------------
 
 build_menu() {
 
@@ -158,9 +152,6 @@ build_menu() {
     echo "0 - Exit"
 }
 
-# --------------------------------------------------
-# preview
-# --------------------------------------------------
 preview_item() {
 
     local item
