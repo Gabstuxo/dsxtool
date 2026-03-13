@@ -10,7 +10,8 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/58f681de-2e4d-4d06-a679-20062025069f" width="100%" alt="dsxtool screenshot" />
+ <img width="1907" height="987" alt="Captura_de_tela_20260313_111037" src="https://github.com/user-attachments/assets/64d9faf5-8125-4099-af24-5562328e2e19" />
+
 </p>
 ---
 
