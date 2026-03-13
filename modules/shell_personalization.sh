@@ -7,7 +7,7 @@ install_zsh() {
 
     log_info "Installing oh-my-zsh..."
     if [[ -d "$HOME/.oh-my-zsh" ]]; then
-        log_warn "oh-my-zsh already installed at ~/.oh-my-zsh. Skipping."
+        log_warn "oh-my-zsh already installed. Skipping."
     else
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
             || die "Failed to install oh-my-zsh."
@@ -55,26 +55,24 @@ install_fish() {
     fi
 
     log_info "Installing fish plugins via fisher..."
-    fish -c "fisher install jethrokuan/z" \
-        || log_warn "Failed to install jethrokuan/z."
-    fish -c "fisher install PatrickF1/fzf.fish" \
-        || log_warn "Failed to install fzf.fish."
-    fish -c "fisher install jorgebucaran/autopair.fish" \
-        || log_warn "Failed to install autopair.fish."
+    fish -c "fisher install jethrokuan/z"            || log_warn "Failed to install jethrokuan/z."
+    fish -c "fisher install PatrickF1/fzf.fish"      || log_warn "Failed to install fzf.fish."
+    fish -c "fisher install jorgebucaran/autopair.fish" || log_warn "Failed to install autopair.fish."
 
     log_info "fish installed successfully."
 }
 
 set_default_shell() {
     local shell_path="$1"
+    local target_user="${SUDO_USER:-$USER}"
 
-    if ! grep -q "$shell_path" /etc/shells; then
+    if ! grep -q "^${shell_path}$" /etc/shells 2>/dev/null; then
         log_warn "$shell_path not found in /etc/shells. Adding..."
         echo "$shell_path" | sudo tee -a /etc/shells >/dev/null
     fi
 
-    log_info "Setting $shell_path as default shell for $USER..."
-    chsh -s "$shell_path" "$USER" \
+    log_info "Setting $shell_path as default shell for $target_user..."
+    sudo chsh -s "$shell_path" "$target_user" \
         || die "Failed to set default shell. Try running: chsh -s $shell_path"
 
     log_info "Default shell set to $shell_path. Re-login to apply."
@@ -83,15 +81,15 @@ set_default_shell() {
 setup_shell() {
     local choice
     choice=$(printf '%s\n' "zsh" "fish" "Cancel" \
-        | fzf --prompt="Shell > " \
+        | _fzf \
+              --prompt="Shell > " \
               --header="Select a shell to install" \
               --height=8 \
               --layout=reverse \
               --border=rounded \
               --pointer="▶" \
-              --color='header:#e5c07b,prompt:#61afef,pointer:#e06c75,hl:#98c379' \
-              --no-info \
-        || true)
+              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,header:#f9e2af,border:#2a2a2a" \
+              --no-info)
 
     case "$choice" in
         zsh)
