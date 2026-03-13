@@ -12,16 +12,23 @@ setup_yay() {
         return 1
     fi
 
-    log_info "Git is available. Proceeding with yay installation."
-    read -rp "Do you want to install yay? (y/n): " confirm
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
-        log_info "Installing yay..."
-        git clone https://aur.archlinux.org/yay.git /tmp/yay
-        (cd /tmp/yay && makepkg -si --noconfirm)
-        rm -rf /tmp/yay
-        log_info "yay installed successfully."
-    else
+    read -rp "Do you want to install yay? (y/n): " confirm < /dev/tty
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
         log_warn "Skipping yay installation."
+        return 0
     fi
-}
 
+    log_info "Installing yay..."
+
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+
+    git clone https://aur.archlinux.org/yay.git "$tmp_dir" \
+        || { rm -rf "$tmp_dir"; die "Failed to clone yay repository."; }
+
+    (cd "$tmp_dir" && makepkg -si --noconfirm) \
+        || { rm -rf "$tmp_dir"; die "Failed to build/install yay."; }
+
+    rm -rf "$tmp_dir"
+    log_info "yay installed successfully."
+}
