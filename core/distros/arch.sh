@@ -2,7 +2,7 @@
 set -euo pipefail
 
 pkg_update() {
-    read -rp "Do you want to update the system? (y/n): " confirm
+    read -rp "Do you want to update the system? (y/n): " confirm < /dev/tty
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
         log_info "Updating system..."
         sudo pacman -Syu --noconfirm
@@ -26,9 +26,10 @@ pkg_exists() {
 
 get_desktop_packages() {
     case "$1" in
-        kde) echo "plasmabase plasma-desktop" ;;
-        xfce) echo "xfce4" ;;
+        kde)      echo "plasma-meta plasma-desktop" ;;
+        xfce)     echo "xfce4 xfce4-goodies" ;;
         hyprland) echo "hyprland hyprpaper" ;;
-        *) echo "$1" ;;
+        cosmic)   echo "cosmic" ;;
+        *)        echo "$1" ;;
     esac
 }
