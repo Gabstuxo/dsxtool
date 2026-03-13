@@ -24,15 +24,15 @@ install_virtualization() {
 
     case "$DISTRO" in
         arch)
-            log_info "Detected Arch Linux, installing virtualization packages..."
+            log_info "Installing virtualization packages for Arch..."
             pkg_install "${arch_packages[@]}" || die "Failed to install virtualization packages."
             ;;
         debian)
-            log_info "Detected Debian/Ubuntu, installing virtualization packages..."
+            log_info "Installing virtualization packages for Debian/Ubuntu..."
             pkg_install "${debian_packages[@]}" || die "Failed to install virtualization packages."
             ;;
         fedora)
-            log_info "Detected Fedora, installing virtualization packages..."
+            log_info "Installing virtualization packages for Fedora..."
             pkg_install "${fedora_packages[@]}" || die "Failed to install virtualization packages."
             ;;
         *)
@@ -43,7 +43,7 @@ install_virtualization() {
     log_info "Virtualization packages installed successfully."
 }
 
-libvirt_setup() {
+_libvirt_setup() {
     local config_file="/etc/libvirt/libvirtd.conf"
 
     [[ ! -f "$config_file" ]] && die "Config file $config_file not found."
@@ -54,13 +54,13 @@ libvirt_setup() {
     log_info "Libvirt configuration updated successfully."
 }
 
-user_setup() {
+_user_setup() {
     local target_user="${SUDO_USER:-${USER:-$(logname)}}"
     sudo usermod -aG libvirt "$target_user" || die "Failed to add $target_user to libvirt group."
     log_info "User $target_user added to libvirt group. Restart session to apply."
 }
 
-service_setup() {
+_service_setup() {
     sudo systemctl enable --now libvirtd || die "Failed to enable/start libvirtd service."
     log_info "Libvirtd service enabled and started."
 
@@ -69,18 +69,18 @@ service_setup() {
     log_info "Default virtual network configured."
 }
 
-virtualization_installed() {
+_virtualization_installed() {
     case "$DISTRO" in
-        arch) pkg_exists qemu-desktop && pkg_exists virt-manager ;;
-        debian) pkg_exists qemu-kvm && pkg_exists virt-manager ;;
-        fedora) pkg_exists qemu-kvm && pkg_exists virt-manager ;;
-        *) return 1 ;;
+        arch)   pkg_exists qemu-desktop && pkg_exists virt-manager ;;
+        debian) pkg_exists qemu-kvm     && pkg_exists virt-manager ;;
+        fedora) pkg_exists qemu-kvm     && pkg_exists virt-manager ;;
+        *)      return 1 ;;
     esac
 }
 
-main() {
-    if ! virtualization_installed; then
-        read -rp "Virtualization packages are not installed. Do you want to install them now? (y/n): " confirm
+setup_virtualization() {
+    if ! _virtualization_installed; then
+        read -rp "Virtualization packages not installed. Install now? (y/n): " confirm < /dev/tty
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             install_virtualization
         else
@@ -88,14 +88,10 @@ main() {
             return 0
         fi
     else
-        log_info "Virtualization packages are already installed."
+        log_info "Virtualization packages already installed."
     fi
 
-    libvirt_setup
-    user_setup
-    service_setup
-}
-
-setup_virtualization() {
-    main
+    _libvirt_setup
+    _user_setup
+    _service_setup
 }
