@@ -17,7 +17,7 @@ install_virtualization() {
 
     local -a fedora_packages=(
         qemu-kvm virt-manager virt-viewer
-        dnsmasq vde2 nmap-ncat
+        dnsmasq nmap-ncat
         nftables ebtables bridge-utils
         libguestfs-tools dmidecode
     )

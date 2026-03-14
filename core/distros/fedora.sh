@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-
 pkg_update() {
-    read -rp "Do you want to update the system? (y/n): " confirm
+    read -rp "Do you want to update the system? (y/n): " confirm < /dev/tty
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
         log_info "Updating system..."
         sudo dnf upgrade -y
@@ -14,7 +13,7 @@ pkg_update() {
 }
 
 pkg_install() {
-    sudo dnf install -y --allowerasing "$@"
+    sudo dnf install -y --allowerasing --skip-unavailable "$@"
 }
 
 pkg_remove() {
@@ -25,12 +24,12 @@ pkg_exists() {
     rpm -q "$1" &>/dev/null
 }
 
-# Desktop environment package mappings
 get_desktop_packages() {
     case "$1" in
-        kde) echo "@kde-desktop-environment" ;;
-        xfce) echo "@xfce-desktop-environment" ;;
+        kde)      echo "@kde-desktop-environment" ;;
+        xfce)     echo "@xfce-desktop-environment" ;;
         hyprland) echo "hyprland" ;;
-        *) echo "$1" ;;
+        cosmic)   echo "cosmic-desktop" ;;
+        *)        echo "$1" ;;
     esac
 }
