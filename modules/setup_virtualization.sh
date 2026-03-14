@@ -44,14 +44,23 @@ install_virtualization() {
 }
 
 _libvirt_setup() {
-    local config_file="/etc/libvirt/libvirtd.conf"
+    # Fedora 43+ uses modular libvirt (virtqemud) instead of monolithic libvirtd
+    # Config file location differs accordingly
+    local config_file
 
-    [[ ! -f "$config_file" ]] && die "Config file $config_file not found."
+    if [[ "$DISTRO" == "fedora" ]] && [[ -f "/etc/libvirt/virtqemud.conf" ]]; then
+        config_file="/etc/libvirt/virtqemud.conf"
+    elif [[ -f "/etc/libvirt/libvirtd.conf" ]]; then
+        config_file="/etc/libvirt/libvirtd.conf"
+    else
+        log_warn "No libvirt config file found — skipping socket config."
+        return 0
+    fi
 
     sudo sed -i 's/^[[:space:]]*#[[:space:]]*\(unix_sock_group = "libvirt"\)/\1/' "$config_file"
     sudo sed -i 's/^[[:space:]]*#[[:space:]]*\(unix_sock_rw_perms = "0770"\)/\1/' "$config_file"
 
-    log_info "Libvirt configuration updated successfully."
+    log_info "Libvirt configuration updated: $config_file"
 }
 
 _user_setup() {
@@ -61,10 +70,19 @@ _user_setup() {
 }
 
 _service_setup() {
-    sudo systemctl enable --now libvirtd || die "Failed to enable/start libvirtd service."
-    log_info "Libvirtd service enabled and started."
+    # Fedora 43+ uses modular daemons — enable virtqemud instead of libvirtd
+    if [[ "$DISTRO" == "fedora" ]] && systemctl list-unit-files virtqemud.service &>/dev/null; then
+        log_info "Enabling virtqemud (modular libvirt for Fedora)..."
+        sudo systemctl enable --now virtqemud.socket || die "Failed to enable virtqemud."
+        sudo systemctl enable --now virtnetworkd.socket || log_warn "Failed to enable virtnetworkd."
+    else
+        sudo systemctl enable --now libvirtd || die "Failed to enable/start libvirtd service."
+    fi
 
-    sudo virsh net-autostart default || log_warn "Failed to set default network to autostart."
+    log_info "Libvirt service enabled and started."
+
+    # Start default network
+    sudo virsh net-autostart default 2>/dev/null || log_warn "Failed to set default network to autostart."
     sudo virsh net-start default 2>/dev/null || true
     log_info "Default virtual network configured."
 }
