@@ -3,25 +3,46 @@ set -euo pipefail
 
 install_virtualization() {
     local -a arch_packages=(
-        qemu-desktop virt-manager virt-viewer
-        dnsmasq vde2 openbsd-netcat
-        nftables iptables-nft libguestfs dmidecode
+    qemu-full
+    libvirt
+    virt-manager
+    virt-viewer
+    dnsmasq
+    vde2
+    bridge-utils
+    openbsd-netcat
+    ebtables
+    nftables
+    libguestfs
+    dmidecode   
     )
 
     local -a debian_packages=(
-        qemu-kvm virt-manager virt-viewer
-        dnsmasq vde2 netcat-openbsd
-        nftables ebtables bridge-utils
-        libguestfs-tools dmidecode
+    qemu-kvm
+    libvirt-daemon-system
+    virt-manager
+    virt-viewer
+    dnsmasq
+    vde2
+    netcat-openbsd
+    nftables
+    bridge-utils
+    libguestfs-tools
+    dmidecode
     )
 
     local -a fedora_packages=(
-        qemu-kvm virt-manager virt-viewer
-        dnsmasq nmap-ncat
-        nftables ebtables bridge-utils
-        libguestfs-tools dmidecode
+    qemu-kvm
+    libvirt
+    virt-manager
+    virt-viewer
+    dnsmasq
+    nmap-ncat
+    nftables
+    bridge-utils
+    libguestfs-tools
+    dmidecode
     )
-
     case "$DISTRO" in
         arch)
             log_info "Installing virtualization packages for Arch..."
@@ -44,8 +65,6 @@ install_virtualization() {
 }
 
 _libvirt_setup() {
-    # Fedora 43+ uses modular libvirt (virtqemud) instead of monolithic libvirtd
-    # Config file location differs accordingly
     local config_file
 
     if [[ "$DISTRO" == "fedora" ]] && [[ -f "/etc/libvirt/virtqemud.conf" ]]; then
@@ -70,26 +89,40 @@ _user_setup() {
 }
 
 _service_setup() {
-    # Fedora 43+ uses modular daemons — enable virtqemud instead of libvirtd
-    if [[ "$DISTRO" == "fedora" ]] && systemctl list-unit-files virtqemud.service &>/dev/null; then
+
+    if [[ "$DISTRO" == "fedora" ]] && systemctl list-unit-files virtqemud.socket &>/dev/null; then
         log_info "Enabling virtqemud (modular libvirt for Fedora)..."
-        sudo systemctl enable --now virtqemud.socket || die "Failed to enable virtqemud."
-        sudo systemctl enable --now virtnetworkd.socket || log_warn "Failed to enable virtnetworkd."
+
+        sudo systemctl enable --now virtqemud.socket \
+            || die "Failed to enable virtqemud."
+
+        sudo systemctl enable --now virtnetworkd.socket \
+            || log_warn "Failed to enable virtnetworkd."
+
     else
-        sudo systemctl enable --now libvirtd || die "Failed to enable/start libvirtd service."
+        sudo systemctl enable --now libvirtd.socket \
+            || die "Failed to enable/start libvirtd service."
     fi
 
     log_info "Libvirt service enabled and started."
 
-    # Start default network
-    sudo virsh net-autostart default 2>/dev/null || log_warn "Failed to set default network to autostart."
+
+    if ! sudo virsh net-info default &>/dev/null; then
+        sudo virsh net-define /usr/share/libvirt/networks/default.xml \
+            || log_warn "Failed to define default network."
+    fi
+
+    sudo virsh net-autostart default \
+        || log_warn "Failed to set default network to autostart."
+
     sudo virsh net-start default 2>/dev/null || true
+
     log_info "Default virtual network configured."
 }
 
 _virtualization_installed() {
     case "$DISTRO" in
-        arch)   pkg_exists qemu-desktop && pkg_exists virt-manager ;;
+        arch)   pkg_exists qemu-full    && pkg_exists virt-manager ;;
         debian) pkg_exists qemu-kvm     && pkg_exists virt-manager ;;
         fedora) pkg_exists qemu-kvm     && pkg_exists virt-manager ;;
         *)      return 1 ;;
