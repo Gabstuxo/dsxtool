@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-set -euo pipefail 
+set -euo pipefail
 
 declare -A APP_REGISTRY
-
 
 APP_REGISTRY["Firefox"]="pkg|firefox|org.mozilla.firefox|-"
 APP_REGISTRY["Chromium"]="pkg|chromium|org.chromium.Chromium|-"
@@ -22,8 +21,6 @@ APP_REGISTRY["Slack"]="flatpak|-|com.slack.Slack|-"
 
 APP_REGISTRY["LibreOffice"]="pkg|libreoffice|org.libreoffice.LibreOffice|-"
 APP_REGISTRY["Obsidian"]="flatpak|-|md.obsidian.Obsidian|-"
-
-
 APP_REGISTRY["Thunderbird"]="pkg|thunderbird|org.mozilla.Thunderbird|-"
 APP_REGISTRY["Bitwarden"]="flatpak|-|com.bitwarden.desktop|-"
 
@@ -45,14 +42,12 @@ _install_app() {
 
     case "$method" in
         pkg)
-            pkg_install "$pkg_name" \
-                || die "Failed to install $app."
+            pkg_install "$pkg_name" || die "Failed to install $app."
             ;;
         flatpak)
             if ! command -v flatpak &>/dev/null; then
                 log_warn "Flatpak not installed. Installing first..."
-                pkg_install flatpak \
-                    || die "Failed to install Flatpak."
+                pkg_install flatpak || die "Failed to install Flatpak."
                 flatpak remote-add --if-not-exists flathub \
                     https://dl.flathub.org/repo/flathub.flatpakrepo
             fi
@@ -63,11 +58,9 @@ _install_app() {
             if ! command -v yay &>/dev/null; then
                 die "yay is not installed. Please run 'Setup yay' first."
             fi
-            yay -S --noconfirm "$aur_pkg" \
-                || die "Failed to install $app via AUR."
+            yay -S --noconfirm "$aur_pkg" || die "Failed to install $app via AUR."
             ;;
         curl)
-            
             _install_curl_app "$app"
             ;;
         *)
@@ -77,7 +70,6 @@ _install_app() {
 
     log_info "$app installed successfully."
 }
- 
 
 _install_curl_app() {
     local app="$1"
@@ -88,6 +80,15 @@ _install_curl_app() {
     esac
 }
 
+_fzf_menu() {
+    local tmp_in tmp_out
+    tmp_in=$(mktemp)
+    tmp_out=$(mktemp)
+    cat > "$tmp_in"
+    fzf "$@" < "$tmp_in" > "$tmp_out" || true
+    cat "$tmp_out"
+    rm -f "$tmp_in" "$tmp_out"
+}
 
 _category_menu() {
     local header="$1"
@@ -96,16 +97,15 @@ _category_menu() {
 
     local selections
     selections=$(printf '%s\n' "${apps[@]}" \
-        | fzf -m \
+        | _fzf_menu -m \
               --prompt="$header > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
               --height=15 \
               --layout=reverse \
               --border=rounded \
               --pointer="▶" \
-              --color='header:#e5c07b,prompt:#61afef,pointer:#e06c75,hl:#98c379' \
-              --no-info \
-        || true)
+              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,marker:#a6e3a1,header:#f9e2af,border:#2a2a2a" \
+              --no-info)
 
     [[ -z "$selections" ]] && { log_warn "No app selected."; return 0; }
 
@@ -115,49 +115,27 @@ _category_menu() {
     done <<< "$selections"
 }
 
-
 menu_browsers() {
-    _category_menu "Browsers" \
-        "Firefox" \
-        "Chromium" \
-        "Brave" \
-        "Zen Browser"
+    _category_menu "Browsers" "Firefox" "Chromium" "Brave" "Zen Browser"
 }
 
 menu_media() {
-    _category_menu "Media" \
-        "VLC" \
-        "Spotify" \
-        "Celluloid" \
-        "Rhythmbox" \
-        "OBS Studio"
+    _category_menu "Media" "VLC" "Spotify" "Celluloid" "Rhythmbox" "OBS Studio"
 }
 
 menu_communication() {
-    _category_menu "Communication" \
-        "Discord" \
-        "Telegram" \
-        "Signal" \
-        "Slack"
+    _category_menu "Communication" "Discord" "Telegram" "Signal" "Slack"
 }
 
 menu_productivity() {
-    _category_menu "Productivity" \
-        "LibreOffice" \
-        "Obsidian" \
-        "Thunderbird" \
-        "Bitwarden" 
+    _category_menu "Productivity" "LibreOffice" "Obsidian" "Thunderbird" "Bitwarden"
 }
 
 menu_gaming() {
-    _category_menu "Gaming" \
-        "Steam" \
-        "Lutris" \
-        "Heroic Games Launcher" \
-        "ProtonUp-Qt" \
-        "MangoHud" \
-        "Sober"
+    _category_menu "Gaming" "Steam" "Lutris" "Heroic Games Launcher" \
+        "ProtonUp-Qt" "MangoHud" "Sober"
 }
+
 setup_apps() {
     while true; do
         local choice
@@ -169,15 +147,15 @@ setup_apps() {
             "  Gaming" \
             "  Development" \
             "  Exit" \
-            | fzf --prompt="Apps > " \
-                  --header="INSTALL APPS" \
-                  --height=13 \
-                  --layout=reverse \
-                  --border=rounded \
-                  --pointer="▶" \
-                  --color='header:#e5c07b,prompt:#61afef,pointer:#e06c75,hl:#98c379' \
-                  --no-info \
-            || true)
+            | _fzf_menu \
+              --prompt="Apps > " \
+              --header="INSTALL APPS" \
+              --height=13 \
+              --layout=reverse \
+              --border=rounded \
+              --pointer="▶" \
+              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,header:#f9e2af,border:#2a2a2a" \
+              --no-info)
 
         case "$choice" in
             *Browsers)      menu_browsers ;;
@@ -189,7 +167,7 @@ setup_apps() {
                 source "$BASE_DIR/modules/development_setup.sh"
                 setup_development
                 ;;
-            *Exit|"")       log_info "Exiting."; return 0 ;;
+            *Exit|"") return 0 ;;
         esac
     done
 }
