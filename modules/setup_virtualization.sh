@@ -9,12 +9,11 @@ install_virtualization() {
     virt-viewer
     dnsmasq
     vde2
-    bridge-utils
     openbsd-netcat
     ebtables
     nftables
     libguestfs
-    dmidecode   
+    dmidecode
     )
 
     local -a debian_packages=(
