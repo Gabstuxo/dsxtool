@@ -10,7 +10,6 @@ install_virtualization() {
     dnsmasq
     vde2
     openbsd-netcat
-    ebtables
     nftables
     libguestfs
     dmidecode
