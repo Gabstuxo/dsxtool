@@ -1,4 +1,3 @@
-
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b9f20200-7b37-4b63-b66a-c26f76d7adb3" width="400" alt="dsxtool logo" />
 </p>
@@ -10,14 +9,27 @@
 </p>
 
 <p align="center">
- <img width="1907" height="987" alt="Captura_de_tela_20260313_111037" src="https://github.com/user-attachments/assets/64d9faf5-8125-4099-af24-5562328e2e19" />
-
-
-
+  <img width="1892" height="804" alt="image" src="https://github.com/user-attachments/assets/1ceef676-01cc-4081-9154-c9a8d0f72120" />
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/bash-4.0+-4EAA25?style=flat&logo=gnubash&logoColor=white" />
+  <img src="https://img.shields.io/github/license/csouzape/dsxtool" />
+  <a href="https://dsxtool.vercel.app"><img src="https://img.shields.io/badge/part%20of-DSX%20ecosystem-cba6f7?style=flat" /></a>
+</p>
+
 ---
 
-## [Website](https://dsxtool.vercel.app/)
+## Part of the DSX Ecosystem
+
+**dsxtool** is part of the **DSX** (*Direct System eXtensions*) ecosystem — a collection of fast, efficient tools built for Linux power users.
+
+| Tool | Description |
+|------|-------------|
+| [dsxtool](https://github.com/csouzape/dsxtool) | Post-install automation with interactive fzf TUI |
+| [dsxconfig](https://github.com/csouzape/dsxconfig) | Backup and restore packages across machines |
+
+---
 
 ## Overview
 
@@ -48,19 +60,21 @@ curl -fsSL https://raw.githubusercontent.com/csouzape/dsxtool/main/bootstrap.sh 
 
 | Option | Description |
 |--------|-------------|
-| **Install TLP** | Detects the current power manager (`tuned`, `power-profiles-daemon`, `system76-power`) and offers to replace it with TLP |
-| **Install Apps** | Module for installing various apps, including browser and development setup | 
-| **Install Alacritty** | Installs Alacritty and applies csouzape's config to `~/.config/alacritty/` |
+| **Update System** | Runs a full system upgrade using the distro's package manager |
+| **Install TLP** | Detects the current power manager and offers to replace it with TLP |
+| **Install Apps** | Categorized app installer: Browsers, Media, Communication, Productivity, Gaming, System Tools, Development |
+| **Install Alacritty** | Installs Alacritty and applies csouzape's config |
 | **Install Konsole** | Installs Konsole |
 | **Install Kitty** | Installs Kitty |
 | **Install Ghostty** | Installs Ghostty |
-| **Update System** | Runs a full system upgrade using the distro's package manager |
-| **Setup Wallpapers** | Clones the wallpapers repository into `~/Imagens/wallpapers` |
-| **Change Desktop Environment** | Installs KDE Plasma, XFCE, Hyprland, Cosmic, or Hyprland (csouzape edition) |
-| **Fonts Downloader** | Downloads and installs Nerd Fonts and other developer fonts |
+| **Setup Wallpapers** | Clones the wallpapers repository into `~/Pictures/wallpapers` |
+| **Change Desktop Environment** | Installs KDE Plasma, XFCE, Hyprland, Cosmic, or Hyprland csouzape edition |
+| **Fonts Downloader** | Downloads and installs Nerd Fonts and developer fonts |
 | **Setup Flatpak** | Installs Flatpak and adds the Flathub remote |
-| **Setup Virtualization** | Installs QEMU/KVM, virt-manager, and configures libvirt |
-| **Setup Shell** | Installs Shell, Zsh and fish config |
+| **Setup Virtualization** | KVM/QEMU with virt-manager or VirtualBox |
+| **Setup Shell** | Installs and configures Zsh or Fish with plugins |
+| **Setup Gaming** | Wine, Steam, Lutris, MangoHud, GameMode and gaming libraries |
+| **DSXConfig** | Launch [dsxconfig](https://github.com/csouzape/dsxconfig) to backup or restore your packages |
 | **Setup yay** *(Arch only)* | Installs the yay AUR helper |
 
 ---
@@ -68,36 +82,35 @@ curl -fsSL https://raw.githubusercontent.com/csouzape/dsxtool/main/bootstrap.sh 
 ## Project Structure
 
 ```
-.
-|-- LICENSE
-|-- README.md
-|-- bootstrap.sh
-|-- core
-|   |-- common.sh
-|   |-- detect.sh
-|   `-- distros
-|       |-- arch.sh
-|       |-- debian.sh
-|       `-- fedora.sh
-|-- install.sh
-`-- modules
-    |-- alacritty.sh
-    |-- change_desktop.sh
-    |-- development_setup.sh
-    |-- flatpak.sh
-    |-- fonts.sh
-    |-- ghostty.sh
-    |-- install_apps.sh
-    |-- kitty.sh
-    |-- konsole.sh
-    |-- setup_virtualization.sh
-    |-- setupyay.sh
-    |-- shell_personalization.sh
-    |-- tlp.sh
-    |-- update_system.sh
-    `-- wallpapers.sh
-
-4 directories, 24 files
+dsxtool/
+├── bootstrap.sh
+├── contributing.md
+├── install.sh
+├── core/
+│   ├── common.sh
+│   ├── detect.sh
+│   └── distros/
+│       ├── arch.sh
+│       ├── debian.sh
+│       └── fedora.sh
+└── modules/
+    ├── alacritty.sh
+    ├── change_desktop.sh
+    ├── development_setup.sh
+    ├── dsxconfig.sh
+    ├── flatpak.sh
+    ├── fonts.sh
+    ├── ghostty.sh
+    ├── install_apps.sh
+    ├── kitty.sh
+    ├── konsole.sh
+    ├── setup_gaming.sh
+    ├── setup_virtualization.sh
+    ├── setupyay.sh
+    ├── shell_personalization.sh
+    ├── tlp.sh
+    ├── update_system.sh
+    └── wallpapers.sh
 ```
 
 ---
@@ -108,7 +121,6 @@ On launch, `install.sh` sources `core/common.sh` and `core/detect.sh`, which set
 
 Each menu option sources its module on demand and calls a single entry-point function — keeping the codebase modular and easy to extend.
 
-
 ---
 
 ## Contributing
@@ -117,27 +129,21 @@ Contributions are welcome.
 
 If you want to contribute to **dsxtool**, please read the contribution guidelines first:
 
- **[Contribution Guide](contributing.md)**
+**[Contribution Guide](contributing.md)**
 
 ### Reporting Issues
 
-Before opening a new issue, check if it already exists.
+Before opening a new issue, check if it already exists. Use the provided templates:
 
-Use the provided templates:
-
-* **Bug reports:** `.github/bug_report.md`
-* **Feature requests:** `.github/feature_request.md`
-
-These templates help maintain consistent and actionable reports.
+- **Bug reports:** `.github/bug_report.md`
+- **Feature requests:** `.github/feature_request.md`
 
 ### Development Notes
 
-* Modules should remain **self-contained Bash scripts** inside `modules/`
-* New features must expose **a single entry-point function**
-* All package operations must use the **distro abstraction layer** (`pkg_install`, `pkg_remove`, `pkg_exists`)
-* Avoid hardcoding distro-specific logic inside modules
-
-
+- Modules should remain **self-contained Bash scripts** inside `modules/`
+- New features must expose **a single entry-point function**
+- All package operations must use the **distro abstraction layer** (`pkg_install`, `pkg_remove`, `pkg_exists`)
+- Avoid hardcoding distro-specific logic inside modules
 
 ---
 
