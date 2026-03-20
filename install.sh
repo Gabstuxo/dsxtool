@@ -167,7 +167,7 @@ run_menu() {
 
     build_menu > "$tmp_in"
 
-    fzf \
+    SHELL=/usr/bin/bash fzf \
         --layout=reverse \
         --prompt="  ➜  " \
         --color="bg:#121212,bg+:#1e1e1e,\
