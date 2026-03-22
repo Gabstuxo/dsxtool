@@ -121,6 +121,10 @@ dsxconfig_module() {
     setup_dsxconfig || log_warn "dsxconfig finished with errors."
 }
 
+bluetooth_module() {
+    source "$BASE_DIR/modules/setup_bluetooth.sh"
+    setup_bluetooth || log_warn "Setup Bluetooth finished with erros."
+}
 
 
 BANNER=$(cat <<'EOF'
@@ -149,9 +153,10 @@ build_menu() {
         "12 - Setup Virtualization" \
         "13 - Setup Shell" \
         "14 - Setup Gaming" \
-        "15 - DSXConfig (BETA)"
+        "15 - DSXConfig (BETA)" \
+        "16 - Setup Bluetooth"
 
-    [[ "$DISTRO" == "arch" ]] && echo "16 - Setup yay (AUR helper)"
+    [[ "$DISTRO" == "arch" ]] && echo "17 - Setup yay (AUR helper)"
     echo "0 - Exit"
 }
 
@@ -244,6 +249,7 @@ dsxtool_main() {
             "Setup Shell")                   clear; install_shell_module ;;
             "Setup Gaming")                  clear; setup_gaming_module ;;
             "DSXConfig (BETA)")  clear; dsxconfig_module ;;
+            "Setup Bluetooth")   clear; bluetooth_module ;;
             "Setup yay (AUR helper)")        clear; install_yay_module ;;
             "Exit")                          log_info "Exiting"; exit 0 ;;
             *)                               continue ;;
