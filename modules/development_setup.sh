@@ -218,6 +218,28 @@ install_ide() {
                     ;;
             esac
             ;;
+        "Pycharm")
+            log_info "Installing Pycharm..."
+            case "$DISTRO" in 
+                arch) 
+                    if [[ $EUID -eq 0 ]]; then 
+                        die "Pycharm cannot be installed as root. Please run dsxtool as a normal user."
+                    fi 
+                    if ! command -v yay &>/dev/null; then 
+                        die "yay is not installed. Please run 'Setup Yay' first."
+                    fi 
+                    sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm pycharm \
+                        && log_info "Pycharm instlaled successfully." \ 
+                        || die "Failed to install pycharm." 
+                    ;; 
+                debian | fedora) 
+                    flatpak install -y flathub com.jetbrains.PyCharm-Professional \ 
+                        && log_info "Pycharm installed succesfully."
+                        || die "Failed to install Pycharm." 
+                    ;; 
+            esac
+            ;;
+        
     esac
 }
 
@@ -541,7 +563,7 @@ menu_ides() {
     selections=$(printf '%s\n' \
         "VS Code" "VSCodium" "Zed" "NVIM (LazyVim)" \
         "Kate" "Cursor" "Claude Code" \
-        "IntelliJ IDEA" "Arduino IDE" \
+        "IntelliJ IDEA" "Arduino IDE" "Pycharm" \
         | _fzf_menu -m \
               --prompt="IDEs > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
