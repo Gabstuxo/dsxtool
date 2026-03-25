@@ -11,6 +11,45 @@ _fzf_menu() {
     rm -f "$tmp_in" "$tmp_out"
 }
 
+_check_not_root() {
+    if [[ $EUID -eq 0 ]]; then
+        die "$1 cannot be installed as root. Please run dsxtool as a normal user."
+    fi
+}
+
+_check_yay() {
+    if ! command -v yay &>/dev/null; then
+        die "yay is not installed. Please run 'Setup yay' first."
+    fi
+}
+
+_install_jetbrains_flatpak() {
+    local name="$1" flatpak_id="$2"
+    flatpak install -y flathub "$flatpak_id" \
+        && log_info "$name installed successfully." \
+        || die "Failed to install $name."
+}
+
+_install_jetbrains_aur() {
+    local name="$1" aur_pkg="$2"
+    _check_not_root "$name"
+    _check_yay
+    sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm "$aur_pkg" \
+        && log_info "$name installed successfully." \
+        || die "Failed to install $name."
+}
+
+_install_jetbrains() {
+    local name="$1" aur_pkg="$2" flatpak_id="$3"
+    log_info "Installing $name..."
+    if [[ "$DISTRO" == "arch" ]]; then
+        _install_jetbrains_aur "$name" "$aur_pkg"
+    else
+        _install_jetbrains_flatpak "$name" "$flatpak_id"
+    fi
+}
+
+
 install_lang() {
     case "$1" in
         "Python")
@@ -92,6 +131,8 @@ install_lang() {
     esac
 }
 
+
+
 install_ide() {
     case "$1" in
         "VS Code")
@@ -105,10 +146,10 @@ install_ide() {
                         --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,prompt:#cba6f7,pointer:#f38ba8,border:#2a2a2a")
                 case "$method" in
                     yay)
-                        if ! command -v yay &>/dev/null; then
-                            die "yay is not installed. Please run 'Setup yay' first."
-                        fi
-                        sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm visual-studio-code-bin
+                        _check_yay
+                        sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm visual-studio-code-bin \
+                            && log_info "VS Code installed successfully." \
+                            || die "Failed to install VS Code."
                         ;;
                     flatpak) flatpak install -y flathub com.visualstudio.code ;;
                     *)       log_warn "No method selected."; return 0 ;;
@@ -121,9 +162,7 @@ install_ide() {
         "VSCodium")
             log_info "Installing VSCodium..."
             if [[ "$DISTRO" == "arch" ]]; then
-                if ! command -v yay &>/dev/null; then
-                    die "yay is not installed. Please run 'Setup yay' first."
-                fi
+                _check_yay
                 sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm vscodium-bin \
                     && log_info "VSCodium installed successfully." \
                     || die "Failed to install VSCodium."
@@ -160,9 +199,7 @@ install_ide() {
         "Cursor")
             log_info "Installing Cursor..."
             if [[ "$DISTRO" == "arch" ]]; then
-                if ! command -v yay &>/dev/null; then
-                    die "yay is not installed. Please run 'Setup yay' first."
-                fi
+                _check_yay
                 sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm cursor-bin \
                     && log_info "Cursor installed successfully." \
                     || die "Failed to install Cursor."
@@ -182,31 +219,12 @@ install_ide() {
                 && log_info "Claude Code installed successfully." \
                 || die "Failed to install Claude Code."
             ;;
-        "IntelliJ IDEA")
-            log_info "Installing IntelliJ IDEA..."
-            if [[ "$DISTRO" == "arch" ]]; then
-                if ! command -v yay &>/dev/null; then
-                    die "yay is not installed. Please run 'Setup yay' first."
-                fi
-                sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm intellij-idea-community-edition \
-                    && log_info "IntelliJ IDEA installed successfully." \
-                    || die "Failed to install IntelliJ IDEA."
-            else
-                flatpak install -y flathub com.jetbrains.IntelliJ-IDEA-Community \
-                    && log_info "IntelliJ IDEA installed successfully." \
-                    || die "Failed to install IntelliJ IDEA."
-            fi
-            ;;
         "Arduino IDE")
             log_info "Installing Arduino IDE..."
             case "$DISTRO" in
                 arch)
-                    if [[ $EUID -eq 0 ]]; then
-                        die "Arduino IDE cannot be installed as root. Please run dsxtool as a normal user."
-                    fi
-                    if ! command -v yay &>/dev/null; then
-                        die "yay is not installed. Please run 'Setup yay' first."
-                    fi
+                    _check_not_root "Arduino IDE"
+                    _check_yay
                     sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm arduino-ide-bin \
                         && log_info "Arduino IDE installed successfully." \
                         || die "Failed to install Arduino IDE."
@@ -218,28 +236,88 @@ install_ide() {
                     ;;
             esac
             ;;
-        "Pycharm")
-            log_info "Installing Pycharm..."
-            case "$DISTRO" in 
-                arch) 
-                    if [[ $EUID -eq 0 ]]; then 
-                        die "Pycharm cannot be installed as root. Please run dsxtool as a normal user."
-                    fi 
-                    if ! command -v yay &>/dev/null; then 
-                        die "yay is not installed. Please run 'Setup Yay' first."
-                    fi 
-                    sudo -u "${SUDO_USER:-$USER}" yay -S --noconfirm pycharm \
-                        && log_info "Pycharm instlaled successfully." \ 
-                        || die "Failed to install pycharm." 
-                    ;; 
-                debian | fedora) 
-                    flatpak install -y flathub com.jetbrains.PyCharm-Professional \ 
-                        && log_info "Pycharm installed succesfully."
-                        || die "Failed to install Pycharm." 
-                    ;; 
-            esac
-            ;;
+
         
+        "JetBrains Toolbox")
+            log_info "Installing JetBrains Toolbox..."
+            if [[ "$DISTRO" == "arch" ]]; then
+                _install_jetbrains_aur "JetBrains Toolbox" "jetbrains-toolbox"
+            else
+                local tmp_dir
+                tmp_dir=$(mktemp -d)
+                local url
+                url=$(curl -s "https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release" \
+                    | grep -o '"linux":{[^}]*}' \
+                    | grep -o '"link":"[^"]*"' \
+                    | head -1 \
+                    | sed 's/"link":"//;s/"//')
+                [[ -z "$url" ]] && die "Failed to get JetBrains Toolbox download URL."
+                curl -L "$url" -o "$tmp_dir/toolbox.tar.gz" \
+                    || die "Failed to download JetBrains Toolbox."
+                tar -xzf "$tmp_dir/toolbox.tar.gz" -C "$tmp_dir"
+                local binary
+                binary=$(find "$tmp_dir" -name "jetbrains-toolbox" -type f | head -1)
+                sudo install "$binary" /usr/local/bin/jetbrains-toolbox \
+                    && log_info "JetBrains Toolbox installed. Run: jetbrains-toolbox" \
+                    || die "Failed to install JetBrains Toolbox."
+                rm -rf "$tmp_dir"
+            fi
+            ;;
+        "IntelliJ IDEA")
+            _install_jetbrains "IntelliJ IDEA" \
+                "intellij-idea-community-edition" \
+                "com.jetbrains.IntelliJ-IDEA-Community"
+            ;;
+        "PyCharm")
+            _install_jetbrains "PyCharm" \
+                "pycharm-community-edition" \
+                "com.jetbrains.PyCharm-Community"
+            ;;
+        "WebStorm")
+            _install_jetbrains "WebStorm" \
+                "webstorm" \
+                "com.jetbrains.WebStorm"
+            ;;
+        "PhpStorm")
+            _install_jetbrains "PhpStorm" \
+                "phpstorm" \
+                "com.jetbrains.PhpStorm"
+            ;;
+        "GoLand")
+            _install_jetbrains "GoLand" \
+                "goland" \
+                "com.jetbrains.GoLand"
+            ;;
+        "CLion")
+            _install_jetbrains "CLion" \
+                "clion" \
+                "com.jetbrains.CLion"
+            ;;
+        "RustRover")
+            _install_jetbrains "RustRover" \
+                "rustrover" \
+                "com.jetbrains.RustRover"
+            ;;
+        "DataGrip")
+            _install_jetbrains "DataGrip" \
+                "datagrip" \
+                "com.jetbrains.DataGrip"
+            ;;
+        "Rider")
+            _install_jetbrains "Rider" \
+                "rider" \
+                "com.jetbrains.Rider"
+            ;;
+        "RubyMine")
+            _install_jetbrains "RubyMine" \
+                "rubymine" \
+                "com.jetbrains.RubyMine"
+            ;;
+        "DataSpell")
+            _install_jetbrains "DataSpell" \
+                "dataspell" \
+                "com.jetbrains.DataSpell"
+            ;;
     esac
 }
 
@@ -334,11 +412,7 @@ install_devtool() {
             ;;
         "HTTPie")
             log_info "Installing HTTPie..."
-            case "$DISTRO" in
-                arch)   pkg_install httpie || die "Failed." ;;
-                debian) pkg_install httpie || die "Failed." ;;
-                fedora) pkg_install httpie || die "Failed." ;;
-            esac
+            pkg_install httpie || die "Failed to install HTTPie."
             log_info "HTTPie installed successfully."
             ;;
         "Build Tools")
@@ -353,9 +427,9 @@ install_devtool() {
         "GCC")
             log_info "Installing GCC..."
             case "$DISTRO" in
-                arch)   pkg_install gcc || die "Failed to install GCC." ;;
-                debian) pkg_install build-essential || die "Failed to install GCC." ;;
-                fedora) pkg_install gcc || die "Failed to install GCC." ;;
+                arch)   pkg_install gcc || die "Failed." ;;
+                debian) pkg_install build-essential || die "Failed." ;;
+                fedora) pkg_install gcc || die "Failed." ;;
             esac
             log_info "GCC installed successfully."
             ;;
@@ -392,7 +466,7 @@ install_devtool() {
         "Kubectl")
             log_info "Installing kubectl..."
             case "$DISTRO" in
-                arch)   pkg_install kubectl || die "Failed to install kubectl." ;;
+                arch)   pkg_install kubectl || die "Failed." ;;
                 debian)
                     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key \
                         | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
@@ -400,26 +474,26 @@ install_devtool() {
                         https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" \
                         | sudo tee /etc/apt/sources.list.d/kubernetes.list
                     sudo apt update -y
-                    pkg_install kubectl || die "Failed to install kubectl."
+                    pkg_install kubectl || die "Failed."
                     ;;
-                fedora) pkg_install kubectl || die "Failed to install kubectl." ;;
+                fedora) pkg_install kubectl || die "Failed." ;;
             esac
             log_info "kubectl installed successfully."
             ;;
         "Minikube")
             log_info "Installing Minikube..."
             case "$DISTRO" in
-                arch)   pkg_install minikube || die "Failed to install Minikube." ;;
+                arch)   pkg_install minikube || die "Failed." ;;
                 debian)
                     curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb \
                         -o /tmp/minikube.deb
-                    sudo dpkg -i /tmp/minikube.deb || die "Failed to install Minikube."
+                    sudo dpkg -i /tmp/minikube.deb || die "Failed."
                     rm -f /tmp/minikube.deb
                     ;;
                 fedora)
                     curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm \
                         -o /tmp/minikube.rpm
-                    sudo rpm -Uvh /tmp/minikube.rpm || die "Failed to install Minikube."
+                    sudo rpm -Uvh /tmp/minikube.rpm || die "Failed."
                     rm -f /tmp/minikube.rpm
                     ;;
             esac
@@ -428,7 +502,7 @@ install_devtool() {
         "Terraform")
             log_info "Installing Terraform..."
             case "$DISTRO" in
-                arch)   pkg_install terraform || die "Failed to install Terraform." ;;
+                arch)   pkg_install terraform || die "Failed." ;;
                 debian)
                     wget -O - https://apt.releases.hashicorp.com/gpg \
                         | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -436,12 +510,12 @@ install_devtool() {
                         https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
                         | sudo tee /etc/apt/sources.list.d/hashicorp.list
                     sudo apt update -y
-                    pkg_install terraform || die "Failed to install Terraform."
+                    pkg_install terraform || die "Failed."
                     ;;
                 fedora)
                     sudo dnf config-manager --add-repo \
                         https://rpm.releases.hashicorp.com/fedora/hashicorp.repo
-                    pkg_install terraform || die "Failed to install Terraform."
+                    pkg_install terraform || die "Failed."
                     ;;
             esac
             log_info "Terraform installed successfully."
@@ -451,41 +525,22 @@ install_devtool() {
 
 install_cli_tool() {
     case "$1" in
-        "bat")
-            log_info "Installing bat..."
-            case "$DISTRO" in
-                arch)   pkg_install bat || die "Failed." ;;
-                debian) pkg_install bat || die "Failed." ;;
-                fedora) pkg_install bat || die "Failed." ;;
-            esac
-            log_info "bat installed successfully."
-            ;;
-        "ripgrep")
-            log_info "Installing ripgrep..."
-            pkg_install ripgrep || die "Failed to install ripgrep."
-            log_info "ripgrep installed successfully."
-            ;;
+        "bat")      pkg_install bat      || die "Failed to install bat." ;;
+        "ripgrep")  pkg_install ripgrep  || die "Failed to install ripgrep." ;;
+        "tmux")     pkg_install tmux     || die "Failed to install tmux." ;;
+        "jq")       pkg_install jq       || die "Failed to install jq." ;;
+        "fzf")      pkg_install fzf      || die "Failed to install fzf." ;;
         "fd")
-            log_info "Installing fd..."
             case "$DISTRO" in
-                arch)   pkg_install fd || die "Failed." ;;
-                debian) pkg_install fd-find || die "Failed." ;;
-                fedora) pkg_install fd-find || die "Failed." ;;
+                arch)          pkg_install fd       || die "Failed." ;;
+                debian|fedora) pkg_install fd-find  || die "Failed." ;;
             esac
-            log_info "fd installed successfully."
             ;;
         "git-lfs")
-            log_info "Installing git-lfs..."
-            case "$DISTRO" in
-                arch)   pkg_install git-lfs || die "Failed." ;;
-                debian) pkg_install git-lfs || die "Failed." ;;
-                fedora) pkg_install git-lfs || die "Failed." ;;
-            esac
+            pkg_install git-lfs || die "Failed to install git-lfs."
             git lfs install
-            log_info "git-lfs installed successfully."
             ;;
         "GitHub CLI (gh)")
-            log_info "Installing GitHub CLI..."
             case "$DISTRO" in
                 arch)   pkg_install github-cli || die "Failed." ;;
                 debian)
@@ -499,12 +554,10 @@ install_cli_tool() {
                     ;;
                 fedora) pkg_install gh || die "Failed." ;;
             esac
-            log_info "GitHub CLI installed successfully."
             ;;
         "lazygit")
-            log_info "Installing lazygit..."
             case "$DISTRO" in
-                arch)   pkg_install lazygit || die "Failed." ;;
+                arch) pkg_install lazygit || die "Failed." ;;
                 debian|fedora)
                     local version
                     version=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest \
@@ -516,25 +569,12 @@ install_cli_tool() {
                     rm -f /tmp/lazygit.tar.gz /tmp/lazygit
                     ;;
             esac
-            log_info "lazygit installed successfully."
-            ;;
-        "tmux")
-            log_info "Installing tmux..."
-            pkg_install tmux || die "Failed to install tmux."
-            log_info "tmux installed successfully."
-            ;;
-        "jq")
-            log_info "Installing jq..."
-            pkg_install jq || die "Failed to install jq."
-            log_info "jq installed successfully."
-            ;;
-        "fzf")
-            log_info "Installing fzf..."
-            pkg_install fzf || die "Failed to install fzf."
-            log_info "fzf installed successfully."
             ;;
     esac
+    log_info "$1 installed successfully."
 }
+
+_FZF_COLORS="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,marker:#a6e3a1,header:#f9e2af,border:#2a2a2a"
 
 menu_languages() {
     local selections
@@ -544,39 +584,33 @@ menu_languages() {
         | _fzf_menu -m \
               --prompt="Languages > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
-              --height=15 \
-              --layout=reverse \
-              --border=rounded \
-              --pointer="▶" \
-              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,marker:#a6e3a1,header:#f9e2af,border:#2a2a2a" \
-              --no-info)
+              --height=15 --layout=reverse --border=rounded --pointer="▶" \
+              --color="$_FZF_COLORS" --no-info)
 
     [[ -z "$selections" ]] && { log_warn "No language selected."; return 0; }
-    while read -r lang; do
-        [[ -z "$lang" ]] && continue
-        install_lang "$lang"
-    done <<< "$selections"
+    while read -r lang; do [[ -z "$lang" ]] && continue; install_lang "$lang"; done <<< "$selections"
 }
 
 menu_ides() {
     local selections
     selections=$(printf '%s\n' \
-        "VS Code" "VSCodium" "Zed" "NVIM (LazyVim)" \
-        "Kate" "Cursor" "Claude Code" \
-        "IntelliJ IDEA" "Arduino IDE" "Pycharm" \
+        "VS Code" "VSCodium" "Zed" "NVIM (LazyVim)" "Kate" "Cursor" "Claude Code" \
+        "Arduino IDE" \
+        "── JetBrains ──" \
+        "JetBrains Toolbox" \
+        "IntelliJ IDEA" "PyCharm" "WebStorm" "PhpStorm" \
+        "GoLand" "CLion" "RustRover" "DataGrip" \
+        "Rider" "RubyMine" "DataSpell" \
         | _fzf_menu -m \
               --prompt="IDEs > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
-              --height=14 \
-              --layout=reverse \
-              --border=rounded \
-              --pointer="▶" \
-              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,marker:#a6e3a1,header:#f9e2af,border:#2a2a2a" \
-              --no-info)
+              --height=22 --layout=reverse --border=rounded --pointer="▶" \
+              --color="$_FZF_COLORS" --no-info)
 
     [[ -z "$selections" ]] && { log_warn "No IDE selected."; return 0; }
     while read -r ide; do
         [[ -z "$ide" ]] && continue
+        [[ "$ide" == "── JetBrains ──" ]] && continue
         install_ide "$ide"
     done <<< "$selections"
 }
@@ -585,25 +619,18 @@ menu_devtools() {
     local selections
     selections=$(printf '%s\n' \
         "Postman" "Insomnia" "DBeaver" \
-        "PostgreSQL" "PostgreSQL Client" \
-        "MySQL Client" "Redis" "Redis Tools" "SQLite" \
-        "HTTPie" "Build Tools" "GCC" \
+        "PostgreSQL" "PostgreSQL Client" "MySQL Client" \
+        "Redis" "Redis Tools" "SQLite" "HTTPie" \
+        "Build Tools" "GCC" \
         "Docker" "Podman" "Kubectl" "Minikube" "Terraform" \
         | _fzf_menu -m \
               --prompt="Dev Tools > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
-              --height=18 \
-              --layout=reverse \
-              --border=rounded \
-              --pointer="▶" \
-              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,marker:#a6e3a1,header:#f9e2af,border:#2a2a2a" \
-              --no-info)
+              --height=18 --layout=reverse --border=rounded --pointer="▶" \
+              --color="$_FZF_COLORS" --no-info)
 
     [[ -z "$selections" ]] && { log_warn "No tool selected."; return 0; }
-    while read -r tool; do
-        [[ -z "$tool" ]] && continue
-        install_devtool "$tool"
-    done <<< "$selections"
+    while read -r tool; do [[ -z "$tool" ]] && continue; install_devtool "$tool"; done <<< "$selections"
 }
 
 menu_cli_tools() {
@@ -615,18 +642,11 @@ menu_cli_tools() {
         | _fzf_menu -m \
               --prompt="CLI Tools > " \
               --header="[TAB] Select  [ENTER] Install  [ESC] Back" \
-              --height=14 \
-              --layout=reverse \
-              --border=rounded \
-              --pointer="▶" \
-              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,marker:#a6e3a1,header:#f9e2af,border:#2a2a2a" \
-              --no-info)
+              --height=14 --layout=reverse --border=rounded --pointer="▶" \
+              --color="$_FZF_COLORS" --no-info)
 
     [[ -z "$selections" ]] && { log_warn "No tool selected."; return 0; }
-    while read -r tool; do
-        [[ -z "$tool" ]] && continue
-        install_cli_tool "$tool"
-    done <<< "$selections"
+    while read -r tool; do [[ -z "$tool" ]] && continue; install_cli_tool "$tool"; done <<< "$selections"
 }
 
 setup_development() {
@@ -641,12 +661,8 @@ setup_development() {
             | _fzf_menu \
               --prompt="Dev Setup > " \
               --header="DEVELOPMENT SETUP  │  [ENTER] select   [ESC] back" \
-              --height=10 \
-              --layout=reverse \
-              --border=rounded \
-              --pointer="▶" \
-              --color="bg:#121212,bg+:#1e1e1e,fg:#d1d1d1,fg+:#ffffff,hl:#89b4fa,prompt:#cba6f7,pointer:#f38ba8,header:#f9e2af,border:#2a2a2a" \
-              --no-info)
+              --height=10 --layout=reverse --border=rounded --pointer="▶" \
+              --color="$_FZF_COLORS" --no-info)
 
         case "$choice" in
             "Languages & Runtimes") menu_languages ;;
