@@ -57,7 +57,6 @@ APP_REGISTRY["fastfetch"]="pkg|fastfetch|-|-"
 APP_REGISTRY["net-tools"]="pkg|net-tools|-|-"
 APP_REGISTRY["openssh"]="native|-|-|-"
 
-
 _fzf_menu() {
     local tmp_in tmp_out
     tmp_in=$(mktemp)
@@ -66,6 +65,21 @@ _fzf_menu() {
     fzf "$@" < "$tmp_in" > "$tmp_out" || true
     cat "$tmp_out"
     rm -f "$tmp_in" "$tmp_out"
+}
+
+_flatpak_install() {
+    local app="$1" flatpak_id="$2"
+    if ! command -v flatpak &>/dev/null; then
+        log_warn "Flatpak not installed. Installing first..."
+        pkg_install flatpak || die "Failed to install Flatpak."
+        flatpak remote-add --if-not-exists --system flathub \
+            https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null \
+            || flatpak remote-add --if-not-exists --user flathub \
+            https://dl.flathub.org/repo/flathub.flatpakrepo
+    fi
+    flatpak install -y --system flathub "$flatpak_id" 2>/dev/null \
+        || flatpak install -y --user flathub "$flatpak_id" \
+        || die "Failed to install $app via Flatpak."
 }
 
 _install_app() {
@@ -86,14 +100,7 @@ _install_app() {
             pkg_install "$pkg_name" || die "Failed to install $app."
             ;;
         flatpak)
-            if ! command -v flatpak &>/dev/null; then
-                log_warn "Flatpak not installed. Installing first..."
-                pkg_install flatpak || die "Failed to install Flatpak."
-                flatpak remote-add --if-not-exists flathub \
-                    https://dl.flathub.org/repo/flathub.flatpakrepo
-            fi
-            flatpak install -y flathub "$flatpak_id" \
-                || die "Failed to install $app via Flatpak."
+            _flatpak_install "$app" "$flatpak_id"
             ;;
         aur)
             if ! command -v yay &>/dev/null; then
@@ -256,11 +263,11 @@ setup_apps() {
               --no-info)
 
         case "$choice" in
-            *Browsers)      menu_browsers ;;
-            *Media)         menu_media ;;
-            *Communication) menu_communication ;;
-            *Productivity)  menu_productivity ;;
-            *Gaming)        menu_gaming ;;
+            *Browsers)       menu_browsers ;;
+            *Media)          menu_media ;;
+            *Communication)  menu_communication ;;
+            *Productivity)   menu_productivity ;;
+            *Gaming)         menu_gaming ;;
             *"System Tools") menu_system_tools ;;
             *Development)
                 source "$BASE_DIR/modules/development_setup.sh"
