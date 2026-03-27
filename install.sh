@@ -93,7 +93,7 @@ install_fonts_module() {
 
 install_flatpak_module() {
     source "$BASE_DIR/modules/flatpak.sh"
-    setup_flatpak || log_warn "Flatpak setup finished with errors."
+    main || log_warn "Flatpak setup finished with errors."
 }
 
 install_virtualization_module() {
