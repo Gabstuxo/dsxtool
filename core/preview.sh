@@ -88,7 +88,7 @@ get_preview() {
             echo "  • Steam + Lutris"
             echo "  • MangoHud + GameMode"
             ;;
-        "DSXConfig (BETA)")
+        "DSXConfig")
             echo "Backup and restore your Linux setup."
             echo
             echo "  • Export packages, AUR, Flatpak"
