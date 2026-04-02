@@ -86,7 +86,7 @@ build_menu() {
         "12 - Setup Virtualization" \
         "13 - Setup Shell" \
         "14 - Setup Gaming" \
-        "15 - DSXConfig (BETA)" \
+        "15 - DSXConfig" \
         "16 - Setup Bluetooth" \
         "17 - Setup Printer"
 
