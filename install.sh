@@ -155,7 +155,7 @@ dsxtool_main() {
             "Setup Virtualization")        clear; install_virtualization_module ;;
             "Setup Shell")                 clear; install_shell_module ;;
             "Setup Gaming")                clear; setup_gaming_module ;;
-            "DSXConfig (BETA)")            clear; dsxconfig_module ;;
+            "DSXConfig")            clear; dsxconfig_module ;;
             "Setup Bluetooth")             clear; bluetooth_module ;;
             "Setup Printer")               clear; setup_printer_module ;;
             "Setup yay (AUR helper)")      clear; install_yay_module ;;
