@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
+_fzf_menu() {
+    local tmp_in tmp_out
+    tmp_in=$(mktemp)
+    tmp_out=$(mktemp)
+    cat > "$tmp_in"
+    fzf "$@" < "$tmp_in" > "$tmp_out" || true
+    cat "$tmp_out"
+    rm -f "$tmp_in" "$tmp_out"
+}
+
 install_cups() {
     if pkg_exists "cups"; then 
         log_info "Cups is already installed."
