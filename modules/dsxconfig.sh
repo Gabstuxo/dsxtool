@@ -36,7 +36,7 @@ _dsxconfig_install_or_update() {
     else
         log_info "Cloning dsxconfig..."
         rm -rf "$DSXCONFIG_DIR"
-        git clone -b testing "$DSXCONFIG_REPO" "$DSXCONFIG_DIR" \
+        git clone "$DSXCONFIG_REPO" "$DSXCONFIG_DIR" \
             || die "Failed to clone dsxconfig."
     fi
 }
