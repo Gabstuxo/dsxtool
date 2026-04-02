@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+
+get_preview() {
+    local item="$1"
+    case "$item" in
+        "Update System")
+            echo "Runs a full system package upgrade."
+            echo
+            echo "  pacman -Syu (Arch)"
+            echo "  dnf upgrade (Fedora)"
+            echo "  apt upgrade (Debian)"
+            ;;
+        "Install TLP")
+            echo "Battery & power management for laptops."
+            echo
+            echo "  • Replaces power-profiles-daemon"
+            echo "  • CPU and battery tuning"
+            ;;
+        "Install Apps")
+            echo "Install apps by category:"
+            echo
+            echo "  Browsers, Media, Communication,"
+            echo "  Productivity, Gaming, Development"
+            ;;
+        "Install Alacritty")
+            echo "GPU-accelerated terminal emulator."
+            echo
+            echo "  • Written in Rust"
+            echo "  • OpenGL rendering"
+            ;;
+        "Install Konsole")
+            echo "KDE default terminal emulator."
+            echo
+            echo "  • Tabbed interface"
+            echo "  • Split view support"
+            ;;
+        "Install Kitty")
+            echo "Fast feature-rich terminal."
+            echo
+            echo "  • GPU rendering"
+            echo "  • Native image display"
+            ;;
+        "Install Ghostty")
+            echo "Modern terminal built for speed."
+            echo
+            echo "  • Native platform integration"
+            echo "  • Built-in multiplexer"
+            ;;
+        "Setup Wallpapers")
+            echo "Downloads csouzape wallpaper collection."
+            echo
+            echo "  • Saved to ~/Pictures/wallpapers"
+            ;;
+        "Change Desktop Environment")
+            echo "Install a new desktop environment."
+            echo
+            echo "  KDE · XFCE · Hyprland · Cosmic"
+            echo "  Hyprland csouzape edition"
+            ;;
+        "Fonts Downloader")
+            echo "Install curated Nerd Fonts collection."
+            echo
+            echo "  • Terminal and IDE icon fonts"
+            ;;
+        "Setup Flatpak")
+            echo "Installs Flatpak + Flathub remote."
+            echo
+            echo "  • Enables sandboxed app distribution"
+            ;;
+        "Setup Virtualization")
+            echo "Installs KVM/QEMU or VirtualBox."
+            echo
+            echo "  • virt-manager GUI"
+            echo "  • libvirt + virtnetworkd"
+            echo "  • Or VirtualBox with guest additions"
+            ;;
+        "Setup Shell")
+            echo "Configure your shell environment."
+            echo
+            echo "  • Zsh + oh-my-zsh"
+            echo "  • Fish + fisher"
+            echo "  • Plugins and prompt setup"
+            ;;
+        "Setup Gaming")
+            echo "Full gaming environment setup."
+            echo
+            echo "  • Wine + gaming libraries"
+            echo "  • Steam + Lutris"
+            echo "  • MangoHud + GameMode"
+            ;;
+        "DSXConfig (BETA)")
+            echo "Backup and restore your Linux setup."
+            echo
+            echo "  • Export packages, AUR, Flatpak"
+            echo "  • Restore on any machine"
+            echo "  • Cross-distro support"
+            echo "  • Part of the DSX ecosystem"
+            ;;
+        "Setup Bluetooth")
+            echo "Installs and configures Bluetooth."
+            echo
+            echo "  • bluez + bluez-utils"
+            echo "  • Enables bluetooth service"
+            echo "  • Optional: blueman GUI"
+            ;;
+        "Setup Printer")
+            echo "Installs CUPS and printer drivers."
+            echo
+            echo "  • HP: hplip"
+            echo "  • Epson: epson-inkjet-printer-escpr"
+            echo "  • Enables CUPS service"
+            ;;
+        "Setup yay (AUR helper)")
+            echo "Builds and installs yay from AUR."
+            echo
+            echo "  • Arch Linux only"
+            echo "  • Requires non-root user"
+            ;;
+        "Exit")
+            echo "Exit dsxtool."
+            ;;
+    esac
+}
+
+get_preview "$1"

@@ -18,7 +18,6 @@ install_tlp() {
 }
 
 detect_manager() {
-    # 1) Check binary on PATH
     for bin in tlp tuned power-profiles-daemon system76-power; do
         if command -v "$bin" &>/dev/null; then
             echo "$bin"
@@ -26,7 +25,6 @@ detect_manager() {
         fi
     done
 
-    # 2) Fallback: check active systemd services (catches daemons without a CLI binary)
     local services=(
         "power-profiles-daemon"
         "tuned"
@@ -41,7 +39,6 @@ detect_manager() {
         fi
     done
 
-    # 3) Fallback: check if service is enabled even if not running
     for svc in "${services[@]}"; do
         if systemctl is-enabled --quiet "$svc" 2>/dev/null; then
             echo "$svc"
@@ -64,7 +61,6 @@ manager_to_package() {
             echo "power-profiles-daemon" ;;
         arch:system76-power|debian:system76-power|fedora:system76-power)
             echo "system76-power" ;;
-        # upower is a dependency, not a standalone manager — just skip removal
         *:upower)
             echo "" ;;
         *)
