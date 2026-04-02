@@ -318,6 +318,22 @@ install_ide() {
                 "dataspell" \
                 "com.jetbrains.DataSpell"
             ;;
+        "Oracle SQL Developer")
+            log_info "Installing Oracle SQL Developer..."
+            if ! command -v java &>/dev/null; then
+                log_warn "Java not found. Installing OpenJDK 17 first..."
+                install_lang "Java (OpenJDK 17)"
+            fi
+            pkg_install unzip || die "Failed to install unzip."
+            local tmp_dir url
+            tmp_dir=$(mktemp -d)
+            url="https://download.oracle.com/otn/java/sqldeveloper/sqldeveloper-23.3.1.345.2114-no-jre.zip"
+            curl -L "$url" -o "$tmp_dir/sqldeveloper.zip" || die "Failed to download Oracle SQL Developer."
+            sudo unzip "$tmp_dir/sqldeveloper.zip" -d /opt/ || die "Failed to extract."
+            sudo ln -sf /opt/sqldeveloper/sqldeveloper.sh /usr/local/bin/sqldeveloper || die "Failed to create symlink."
+            rm -rf "$tmp_dir"
+            log_info "Oracle SQL Developer installed. Run: sqldeveloper"
+            ;;
     esac
 }
 
@@ -599,7 +615,7 @@ menu_ides() {
         "── JetBrains ──" \
         "JetBrains Toolbox" \
         "IntelliJ IDEA" "PyCharm" "WebStorm" "PhpStorm" \
-        "GoLand" "CLion" "RustRover" "DataGrip" \
+        "GoLand" "CLion" "RustRover" "DataGrip" "Oracle SQL Developer" \
         "Rider" "RubyMine" "DataSpell" \
         | _fzf_menu -m \
               --prompt="IDEs > " \
