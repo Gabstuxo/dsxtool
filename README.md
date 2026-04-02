@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/b9f20200-7b37-4b63-b66a-c26f76d7adb3" width="400" alt="dsxtool logo" />
-</p>
+
 
 <h1 align="center">dsxtool</h1>
 
